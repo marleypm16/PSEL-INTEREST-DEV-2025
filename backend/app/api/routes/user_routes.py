@@ -8,7 +8,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 def get_users(user_repository: UserRepository = Depends(UserRepository.get_user_repository)):
     return user_repository.get_all_users()
 
-@router.get("/{user_id}",response_model=UserRead)
+@router.get("/{user_id}",response_model=UserRead,description="Get a user by their ID")
 def get_user(user_id: uuid.UUID, user_repository: UserRepository = Depends(UserRepository.get_user_repository)):
     user = user_repository.get_user_by_id(user_id)
     if not user:
