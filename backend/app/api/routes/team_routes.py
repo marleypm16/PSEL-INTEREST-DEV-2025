@@ -4,7 +4,7 @@ import uuid
 from app.repositories.team_repository import TeamRepository
 router = APIRouter(prefix="/teams", tags=["teams"])
 
-@router.get("/",response_model=TeamRead)
+@router.get("/",response_model=list[TeamRead])
 def get_teams(team_repository: TeamRepository = Depends(TeamRepository.get_team_repository)):
     return team_repository.get_all_teams()
 
@@ -15,7 +15,7 @@ def get_team(team_id: uuid.UUID, team_repository: TeamRepository = Depends(TeamR
         raise HTTPException(status_code=404, detail="Team not found")
     return team
 
-@router.post("/",response_model=TeamCreate)
+@router.post("/",response_model=TeamCreate,status_code=201)
 def create_team(team_data_create: TeamCreate, team_repository: TeamRepository = Depends(TeamRepository.get_team_repository)):
     return team_repository.create_team(team_data_create)
 
@@ -34,14 +34,14 @@ def delete_team(team_id: uuid.UUID, team_repository: TeamRepository = Depends(Te
     team_repository.delete_team(team_id)
     return {"detail": "Team deleted successfully"}
 
-@router.post("/{team_id}/add_member/{user_id}")
+@router.post("/{team_id}/membro/{user_id}")
 def add_member_to_team(team_id: uuid.UUID, user_id: uuid.UUID, team_repository: TeamRepository = Depends(TeamRepository.get_team_repository)):
     user = team_repository.add_member_to_team(team_id, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-@router.delete("/{team_id}/remove_member/{user_id}")
+@router.delete("/{team_id}/membro/{user_id}")
 def remove_member_from_team(team_id: uuid.UUID, user_id: uuid.UUID, team_repository: TeamRepository = Depends(TeamRepository.get_team_repository)):
     user = team_repository.remove_member_from_team(team_id, user_id)
     if not user:

@@ -4,7 +4,7 @@ from app.repositories.user_repository import UserRepository
 import uuid
 router = APIRouter(prefix="/users", tags=["users"])
 
-@router.get("/",response_model=UserRead)
+@router.get("/",response_model=list[UserRead])
 def get_users(user_repository: UserRepository = Depends(UserRepository.get_user_repository)):
     return user_repository.get_all_users()
 
