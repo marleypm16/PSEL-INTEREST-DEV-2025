@@ -15,11 +15,11 @@ def get_user(user_id: uuid.UUID, user_repository: UserRepository = Depends(UserR
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-@router.post("/",response_model=UserCreate,status_code=201)
+@router.post("/",response_model=UserRead,status_code=201)
 def create_user(user_data_create: UserCreate, user_repository: UserRepository = Depends(UserRepository.get_user_repository)):
     return user_repository.create_user(user_data_create)
 
-@router.put("/{user_id}",response_model=UserUpdate,status_code=200)
+@router.put("/{user_id}",response_model=UserRead,status_code=200)
 def update_user(user_id: uuid.UUID, user_data_update: UserUpdate, user_repository: UserRepository = Depends(UserRepository.get_user_repository)):
     user = user_repository.get_user_by_id(user_id)
     if not user:
@@ -32,4 +32,4 @@ def delete_user(user_id: uuid.UUID, user_repository: UserRepository = Depends(Us
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     user_repository.delete_user(user_id)
-    return {"detail": "User deleted successfully"}
+    return None
