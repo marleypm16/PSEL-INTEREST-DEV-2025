@@ -1,3 +1,4 @@
+from app.models import User
 from fastapi import APIRouter, HTTPException,Depends
 from app.schemas.user_schema import UserRead,UserCreate,UserUpdate
 from app.repositories.user_repository import UserRepository
@@ -17,15 +18,16 @@ def get_user(user_id: uuid.UUID, user_repository: UserRepository = Depends(UserR
 
 @router.post("/",response_model=UserRead,status_code=201)
 def create_user(user_data_create: UserCreate, user_repository: UserRepository = Depends(UserRepository.get_user_repository)):
-    return user_repository.create_user(user_data_create)
+    new_user = User(**user_data_create.model_dump())
+    return user_repository.create_user(new_user)
 
 @router.put("/{user_id}",response_model=UserRead,status_code=200)
 def update_user(user_id: uuid.UUID, user_data_update: UserUpdate, user_repository: UserRepository = Depends(UserRepository.get_user_repository)):
     user = user_repository.get_user_by_id(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return user_repository.update_user(user_id, user_data_update)
-
+    user_data_update_dict = user_data_update.model_dump(exclude_unset=True)
+    return user_repository.update_user(user_id, user_data_update_dict)
 @router.delete("/{user_id}",status_code=204)
 def delete_user(user_id: uuid.UUID, user_repository: UserRepository = Depends(UserRepository.get_user_repository)):
     user = user_repository.get_user_by_id(user_id)
