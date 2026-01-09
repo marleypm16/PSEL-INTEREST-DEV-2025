@@ -1,5 +1,7 @@
 from app.models import User
+from fastapi import Depends
 from sqlmodel import Session,select
+from app.core.db import get_session
 class UserRepository:
     def __init__(self, db_session : Session):
         self.db_session = db_session
@@ -30,3 +32,6 @@ class UserRepository:
             self.db_session.delete(user)
             self.db_session.commit()
         return user
+    
+    def get_user_repository(db_session : Session = Depends(get_session)):
+        return UserRepository(db_session)

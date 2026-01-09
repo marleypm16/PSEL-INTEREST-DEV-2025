@@ -1,5 +1,7 @@
 from app.models import Team, User
 from sqlmodel import Session,select
+from fastapi import Depends
+from app.core.db import get_session
 import uuid
 class TeamRepository:
     def __init__(self, db_session : Session):
@@ -47,3 +49,6 @@ class TeamRepository:
             self.db_session.commit()
             self.db_session.refresh(user)
         return user
+    
+    def get_team_repository(db_session : Session = Depends(get_session)):
+        return TeamRepository(db_session)
