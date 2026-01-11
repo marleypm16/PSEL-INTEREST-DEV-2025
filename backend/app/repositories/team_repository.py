@@ -35,6 +35,9 @@ class TeamRepository:
     
     def add_member_to_team(self, team_id: uuid.UUID, user_id: uuid.UUID):
         user = self.db_session.get(User, user_id)
+        team = self.db_session.get(Team, team_id)
+        if not team:
+            return None
         if user:
             user.team_id = team_id
             self.db_session.add(user)
@@ -43,6 +46,8 @@ class TeamRepository:
         return user
     def remove_member_from_team(self, team_id: uuid.UUID, user_id: uuid.UUID):
         user = self.db_session.get(User, user_id)
+        if user and user.team_id != team_id:
+            return None
         if user and user.team_id == team_id:
             user.team_id = None
             self.db_session.add(user)
