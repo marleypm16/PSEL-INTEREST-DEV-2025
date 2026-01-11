@@ -38,14 +38,14 @@ def delete_team(team_id: uuid.UUID, team_repository: TeamRepository = Depends(Te
     team_repository.delete_team(team_id)
     return None
 
-@router.post("/{team_id}/membro/{user_id}",status_code=201,response_model=UserRead)
+@router.post("/{team_id}/member/{user_id}",status_code=201,response_model=UserRead)
 def add_member_to_team(team_id: uuid.UUID, user_id: uuid.UUID, team_repository: TeamRepository = Depends(TeamRepository.get_team_repository)):
     user = team_repository.add_member_to_team(team_id, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-@router.delete("/{team_id}/membro/{user_id}" ,status_code=204)
+@router.delete("/{team_id}/member/{user_id}" ,status_code=204)
 def remove_member_from_team(team_id: uuid.UUID, user_id: uuid.UUID, team_repository: TeamRepository = Depends(TeamRepository.get_team_repository)):
     user = team_repository.remove_member_from_team(team_id, user_id)
     if not user:
