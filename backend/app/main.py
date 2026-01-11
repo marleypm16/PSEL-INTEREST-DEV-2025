@@ -1,8 +1,9 @@
 import sentry_sdk
-from fastapi import FastAPI
+from fastapi import FastAPI,Request
+from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
-
+from sqlalchemy.exc import IntegrityError 
 from app.api.main import api_router
 from app.core.config import settings
 
@@ -19,6 +20,14 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     generate_unique_id_function=custom_generate_unique_id,
 )
+##Gerado
+@app.exception_handler(IntegrityError)
+async def integrity_exception_handler(request: Request, exc: IntegrityError):
+    # Quando o banco reclamar de chave duplicada (Unique Constraint), retorna 400
+    return JSONResponse(
+        status_code=400,
+        content={"detail": "Integrity Error: Duplicate key or constraint violation."},
+    )
 
 # Define todas as origens habilitadas para CORS
 if settings.all_cors_origins:
