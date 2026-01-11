@@ -18,6 +18,7 @@ def session_fixture():
         yield session
     SQLModel.metadata.drop_all(engine)
 
+@pytest.fixture(name="client")
 def client_fixture(session: Session):
     def get_session_override():
         return session
