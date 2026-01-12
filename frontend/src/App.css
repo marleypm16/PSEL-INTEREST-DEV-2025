@@ -255,7 +255,138 @@ body {
     order: -1; /* Joga a sidebar para o topo no mobile */
   }
 }
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
 
+.users-table th,
+.users-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.users-table th {
+  background-color: #f8fafc;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.users-table tr:last-child td {
+  border-bottom: none;
+}
+
+.users-table tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Badges de Status */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-free {
+  background-color: #dcfce7;
+  color: #166534; /* Verde */
+}
+
+.status-busy {
+  background-color: #e0f2fe;
+  color: #075985; /* Azul */
+}
+
+/* Container de Ações (Botões Editar/Excluir) */
+.actions-cell {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+/* Layout Mobile (Cards) - Inicialmente escondido */
+.mobile-user-list {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mobile-user-card {
+  background: var(--bg-card);
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Fundo escuro */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--shadow-md);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================
+   7. MEDIA QUERIES (A Mágica da Responsividade)
+   ========================================= */
+@media (max-width: 768px) {
+  /* No mobile, ESCONDE a tabela e MOSTRA a lista de cards */
+  .users-table {
+    display: none;
+  }
+  
+  .mobile-user-list {
+    display: flex;
+  }
+}
 .stars {
   position: fixed;
   top: 0;
