@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { Button } from '../components/Button';
 
-export const NotFoundPage = () => {
+const NotFoundPage = () => {
   const navigate = useNavigate();
 
   return (
@@ -24,3 +24,5 @@ export const NotFoundPage = () => {
     </div>
   );
 };
+
+export default NotFoundPage;
