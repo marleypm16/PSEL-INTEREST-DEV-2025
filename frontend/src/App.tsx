@@ -1,7 +1,7 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QuestProvider } from './hooks/useQuestContext'
 import MainLayout from './layouts/MainLayout'
-import LandingPage from './pages/UsersPage'
+import UsersPage from './pages/UsersPage' 
 import  TeamsPage  from './pages/TeamsPage'
 import './App.css'
 import  TeamDetailsPage  from './pages/TeamsDetails'
@@ -11,8 +11,9 @@ function App() {
     <QuestProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<LandingPage />} />
+            <Route path="/" element={<MainLayout />}>
+            <Route index element={<Navigate to="/teams" replace />} />            
+            <Route path='users' element={<UsersPage />} />
             <Route path="teams" element={<TeamsPage />} />
             <Route path="teams/:id" element={<TeamDetailsPage />} />
           </Route>
