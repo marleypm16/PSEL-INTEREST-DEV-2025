@@ -387,6 +387,131 @@ body {
     display: flex;
   }
 }
+.app-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* --- SIDEBAR (Desktop) --- */
+.sidebar {
+  width: 250px;
+  background-color: white;
+  border-right: 1px solid var(--border);
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar-header {
+  height: 64px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--primary);
+}
+
+.nav-links {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.nav-item:hover {
+  background-color: #f1f5f9;
+  color: var(--text-main);
+}
+
+.nav-item.active {
+  background-color: #eff6ff;
+  color: var(--primary);
+}
+
+/* --- ÁREA DE CONTEÚDO --- */
+.main-content {
+  flex: 1;
+  margin-left: 250px; /* Espaço da Sidebar no Desktop */
+  min-height: 100vh;
+  background-color: var(--bg-body);
+}
+
+/* --- MOBILE HEADER (Só aparece no celular) --- */
+.mobile-header {
+  display: none; /* Escondido no Desktop */
+  height: 60px;
+  background-color: white;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  padding: 0 1rem;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.menu-toggle {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  color: var(--text-main);
+}
+
+/* OVERLAY ESCURO (Fundo quando menu abre no mobile) */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 45;
+}
+
+/* --- MEDIA QUERIES (Mobile) --- */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0; /* Remove margem */
+    width: 100%;
+  }
+
+  .mobile-header {
+    display: flex;
+  }
+
+  /* Esconde a Sidebar jogando ela para fora da tela */
+  .sidebar {
+    transform: translateX(-100%); 
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Classe para abrir a Sidebar */
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Mostra o overlay só se o menu estiver aberto */
+  .sidebar-overlay.open {
+    display: block;
+  }
+}
 .stars {
   position: fixed;
   top: 0;
