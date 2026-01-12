@@ -1,3 +1,4 @@
+import uuid
 from app.models import User
 from fastapi import Depends
 from sqlmodel import Session,select
@@ -18,8 +19,10 @@ class UserRepository:
         self.db_session.refresh(user)
         return user
 
-    def update_user(self, user: User):
-       user = self.get_user_by_id(user.id)
+    def update_user(self, user_id: uuid.UUID, new_data_user: dict[str, any]):
+       user = self.get_user_by_id(user_id)
+       for key, value in new_data_user.items():
+           setattr(user, key, value)
        if user:
            self.db_session.add(user)
            self.db_session.commit()
