@@ -28,6 +28,47 @@ body {
   position: relative;
   background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0a0e27 100%);
 }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--radius);
+  transition: all 0.2s;
+  height: 40px;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+}
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+}
+.btn-outline:hover {
+  background-color: #f8fafc;
+  border-color: var(--text-muted);
+}
+
+.btn-danger {
+  background-color: white;
+  color: var(--danger);
+  border: 1px solid var(--border);
+}
+.btn-danger:hover {
+  background-color: #fef2f2;
+  border-color: var(--danger);
+}
 
 .stars {
   position: fixed;
