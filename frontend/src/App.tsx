@@ -5,6 +5,7 @@ import UsersPage from './pages/UsersPage'
 import  TeamsPage  from './pages/TeamsPage'
 import './App.css'
 import  TeamDetailsPage  from './pages/TeamsDetails'
+import  NotFoundPage  from './pages/NotFound'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
             <Route path='users' element={<UsersPage />} />
             <Route path="teams" element={<TeamsPage />} />
             <Route path="teams/:id" element={<TeamDetailsPage />} />
+            <Route path="*" element={<NotFoundPage/>} />
           </Route>
         </Routes>
       </Router>
