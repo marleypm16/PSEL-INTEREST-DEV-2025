@@ -1,9 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { QuestProvider } from './hooks/useQuestContext'
 import MainLayout from './layouts/MainLayout'
-import LandingPage from './pages/LandingPage'
-import QuestPage from './pages/QuestPage'
+import LandingPage from './pages/UsersPage'
+import  TeamsPage  from './pages/TeamsPage'
 import './App.css'
+import  TeamDetailsPage  from './pages/TeamsDetails'
 
 function App() {
   return (
@@ -12,7 +13,8 @@ function App() {
         <Routes>
           <Route path="/" element={<MainLayout />}>
             <Route index element={<LandingPage />} />
-            <Route path="quest/:id" element={<QuestPage />} />
+            <Route path="teams" element={<TeamsPage />} />
+            <Route path="teams/:id" element={<TeamDetailsPage />} />
           </Route>
         </Routes>
       </Router>
