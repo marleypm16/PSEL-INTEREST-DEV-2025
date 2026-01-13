@@ -1,9 +1,6 @@
-import {  Edit, Trash2, Mail } from "lucide-react";
+import { Edit, Trash2, Mail } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-
-
-
 import {
   Table,
   TableBody,
@@ -13,75 +10,83 @@ import {
   TableRow,
 } from "../ui/table";
 import { User } from "../../types/users";
+
 interface UsersTableProps {
-    users: User[];
-    handleOpenModal: (user?: User) => void;
-    handleDelete: (userId: string) => void;
+  users: User[];
+  handleOpenModal: (user?: User) => void;
+  handleDelete: (userId: string) => void;
 }
+
 const UsersTable = ({ users, handleOpenModal, handleDelete }: UsersTableProps) => {
-    return (
-        <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Usuário</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Equipe</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div >
-                        <div>
-                          <div className="font-medium">{user.name}</div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Mail className="w-3 h-3 text-slate-400" />
-                          {user.email}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">{user.team ? user.team : "Sem equipe"}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={user.is_active ? "default" : "secondary"}
-                        className={
-                          user.is_active 
-                            ? "bg-green-100 text-green-700 hover:bg-green-100"
-                            : ""
-                        }
-                      >
-                        {user.is_active ? "Ativo" : "Inativo"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                         
-                          <Button onClick={() => handleOpenModal(user)}>
-                            <Edit className="w-4 h-4 mr-2" />
-                            Editar
-                          </Button>
-                          <Button
-                            onClick={() => handleDelete(user.id)}
-                            className="text-red-600"
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Excluir
-                          </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-    );
-}
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Usuário</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Equipe</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Ações</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {users.map((user) => (
+            <TableRow key={user.id}>
+              <TableCell className="font-medium">
+                {user.name}
+              </TableCell>
+              
+              <TableCell>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Mail className="w-4 h-4" />
+                  <span>{user.email}</span>
+                </div>
+              </TableCell>
+              
+              <TableCell>
+                <Badge variant="outline" className="font-normal">
+                  {user.team ? user.team : "Sem equipe"}
+                </Badge>
+              </TableCell>
+              
+              <TableCell>
+                <Badge 
+                  variant={user.is_active ? "default" : "secondary"}
+                  className={user.is_active ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+                >
+                  {user.is_active ? "Ativo" : "Inativo"}
+                </Badge>
+              </TableCell>
+              
+              <TableCell className="text-right">
+                <div className="flex items-center justify-end gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => handleOpenModal(user)}
+                    title="Editar usuário"
+                  >
+                    <Edit className="w-4 h-4 text-blue-500" />
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDelete(user.id)}
+                    className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                    title="Excluir usuário"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+};
 
 export default UsersTable;
