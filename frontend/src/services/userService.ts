@@ -1,6 +1,6 @@
 import api from "../api/api";
-import { User } from "../types/users";
-export const createUser = async (userData: Omit<User, "id">): Promise<User> => {
+import { CreateUserDTO, User } from "../types/users";
+export const createUser = async (userData: CreateUserDTO): Promise<User> => {
     const response = await api.post<User>("/users", userData);
     return response.data;
 }
@@ -10,7 +10,7 @@ export const getUsers = async (): Promise<User[]> => {
     return response.data;
 }
 
-export const updateUser = async (userId: string, userData: Omit<User, "id">): Promise<User> => {
+export const updateUser = async (userId: string, userData: CreateUserDTO): Promise<User> => {
     const response = await api.put<User>(`/users/${userId}`, userData);
     return response.data;
 }
