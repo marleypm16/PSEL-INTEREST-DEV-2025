@@ -17,14 +17,16 @@ import {
   SelectValue,
 } from "../ui/select";
 import { CreateUserDTO, User } from "../../types/users";
+import { Loader2 } from "lucide-react";
 interface UserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   user?: User;
   onSave: (user: CreateUserDTO) => void;
+  isSaving?: boolean;
 }
 
-const  UserModal = ({ open, onOpenChange, user, onSave }: UserDialogProps) => {
+const  UserModal = ({ open, onOpenChange, user, onSave, isSaving }: UserDialogProps) => {
   const [formData, setFormData] = useState<CreateUserDTO>({
     name: "",
     email: "",
@@ -66,6 +68,7 @@ const  UserModal = ({ open, onOpenChange, user, onSave }: UserDialogProps) => {
               <Input
                 id="name"
                 value={formData.name}
+                disabled={isSaving}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Ex: João Silva"
                 required
@@ -77,6 +80,7 @@ const  UserModal = ({ open, onOpenChange, user, onSave }: UserDialogProps) => {
               <Input
                 id="email"
                 type="email"
+                disabled={isSaving}
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="joao.silva@company.com"
@@ -90,6 +94,7 @@ const  UserModal = ({ open, onOpenChange, user, onSave }: UserDialogProps) => {
               <div className="space-y-2">
                 <Label htmlFor="team">Equipe</Label>
                 <Select
+                  disabled={isSaving}
                   value={formData.team_id}
                   onValueChange={(value) => setFormData({ ...formData, team_id: value })}
                 >
@@ -113,6 +118,7 @@ const  UserModal = ({ open, onOpenChange, user, onSave }: UserDialogProps) => {
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.is_active ? "active" : "inactive"}
+                disabled={isSaving}
                 onValueChange={(value: "active" | "inactive") =>
                   setFormData({ ...formData, is_active: value === "active" })
                 }
@@ -133,11 +139,13 @@ const  UserModal = ({ open, onOpenChange, user, onSave }: UserDialogProps) => {
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              disabled={isSaving}
             >
               Cancelar
             </Button>
-            <Button type="submit">
+            <Button type="submit" disabled={isSaving}>
               {user ? "Salvar Alterações" : "Adicionar Usuário"}
+              {isSaving && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
             </Button>
           </DialogFooter>
         </form>
