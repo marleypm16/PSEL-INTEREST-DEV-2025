@@ -3,7 +3,6 @@ import { QuestProvider } from './hooks/useQuestContext'
 import MainLayout from './layouts/MainLayout'
 import UsersPage from './pages/UsersPage' 
 import  TeamsPage  from './pages/TeamsPage'
-import './App.css'
 import  TeamDetailsPage  from './pages/TeamsDetails'
 import  NotFoundPage  from './pages/NotFound'
 
