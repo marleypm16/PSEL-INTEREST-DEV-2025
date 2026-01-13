@@ -1,109 +1,162 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from "react";
+import { Plus, Search, Loader2 } from "lucide-react"; // Importar Loader
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { CreateUserDTO, User } from "../types/users";
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import UserModal from "../components/usersPage/UserModal";
+import UsersTable from "../components/usersPage/UsersTable";
+import UsersCards from "../components/usersPage/UsersCards";
+import { useUsers } from "../hooks/useUsers";
+import DeleteDialog from "../components/DeleteDialog";
 
-import { Button } from '../components/button/Button';
-import { User } from '../types/users';
-import UsersTable from '../components/UsersTable';
-import UsersCards from '../components/UsersCards';
-import Modal from '../components/Modal';
+const UserPage = () => {
+  const { users, loading, fetchUsers, createUser, updateUser, deleteUser } = useUsers();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | undefined>(undefined);
+  
+  const [isSubmitting, setIsSubmitting] = useState(false); 
+  
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
-const UsersPage = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Estados do Modal
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState(""); // Apenas o nome
+  const filteredUsers = useMemo(() => {
+    return users.filter(
+      (user) =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [users, searchTerm]);
 
   useEffect(() => {
-    loadUsers();
-  }, []);
-
-  const loadUsers = async () => {
-    try {
-      setIsLoading(true);
-      setUsers([
-        { id: 'u1', name: 'Alice', team_id: '1' },
-        { id: 'u2', name: 'Bob', team_id: '' },
-      ]);
-    } catch (error) {
-      alert("Erro ao carregar usuários");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    fetchUsers();
+  }, []); // Dependência vazia correta para mount
 
   const handleOpenModal = (user?: User) => {
-    if (user) {
-      setEditingUser(user);
-      setFormData(user.name);
-    } else {
-      setEditingUser(null);
-      setFormData("");
-    }
-    setIsModalOpen(true);
+    setEditingUser(user);
+    setIsDialogOpen(true);
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.trim()) return;
+  const handleDeleteDialog = (userId: string) => {
+    setIsDeleteDialogOpen(true);
+    setDeletingUserId(userId);
+  };
 
+  // 2. CORREÇÃO ASYNC: Aguardar a promessa antes do feedback
+  const handleDeleteUser = async () => {
+    if (!deletingUserId) return;
+    
     try {
+      setIsSubmitting(true);
+      await deleteUser(deletingUserId); // Assumindo que o hook retorna uma Promise
+      toast.success("Usuário excluído com sucesso!");
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
+      toast.error("Erro ao excluir usuário.");
+      // Não fecha o modal em caso de erro, permite tentar de novo
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSaveUser = async (user: CreateUserDTO) => {
+    try {
+      setIsSubmitting(true);
       if (editingUser) {
-        // Editar
-        setUsers(users.map(u => u.id === editingUser.id ? { ...u, name: formData } : u));
+        await updateUser(editingUser.id, user);
+        toast.success("Usuário atualizado com sucesso!");
       } else {
-        // Criar
-        const newUser = { id: `u${users.length + 1}`, name: formData, team_id: '' };
-        setUsers([...users, newUser]);
+        await createUser(user);
+        toast.success("Usuário criado com sucesso!");
       }
-      setIsModalOpen(false);
+      setIsDialogOpen(false);
     } catch (error) {
-      alert("Erro ao salvar usuário.");
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir este usuário?")) return;
-    try {
-      setUsers(users.filter(u => u.id !== id));
-    } catch (error) {
-      alert("Erro ao excluir. Verifique se ele não é líder de uma equipe.");
+      console.error(error) // Log para debug
+      toast.error("Erro ao salvar informações.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="page-container">
-      <header className="page-header">
-        <h1 className="page-title">
-          Usuários
-        </h1>
-        <Button onClick={() => handleOpenModal()}>
-           Novo Usuário
-        </Button>
-      </header>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <CardTitle>Gerenciamento de Usuários</CardTitle>
+            <Button onClick={() => handleOpenModal()} className="w-full sm:w-auto">
+              <Plus className="w-4 h-4 mr-2" />
+              Adicionar Usuário
+            </Button>
+          </div>
+          <div className="relative mt-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input
+              placeholder="Buscar por nome ou email..." 
+              className="pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+             <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+             </div>
+          ) : (
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <UsersTable 
+                  users={filteredUsers} 
+                  handleOpenModal={handleOpenModal} 
+                  handleDelete={handleDeleteDialog} 
+                />
+              </div>
 
-      {isLoading ? (
-        <p>Carregando...</p>
-      ) : (
-        <>
-          {/* VISÃO DESKTOP: TABELA */}
-          <UsersTable users={users} handleOpenModal={handleOpenModal} handleDelete={handleDelete} />
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-4">
+                {filteredUsers.map((user) => (
+                  <UsersCards 
+                    key={user.id} 
+                    user={user} 
+                    handleOpenModal={handleOpenModal} 
+                    handleDelete={handleDeleteDialog} 
+                  />
+                ))}
+              </div>
 
-          {/* VISÃO MOBILE: CARDS */}
-          <UsersCards users={users} handleOpenModal={handleOpenModal} handleDelete={handleDelete} />
-        </>
-      )}
-      {isModalOpen && (
-        <Modal 
-          editingUser={editingUser} 
-          setIsModalOpen={setIsModalOpen}
-          formData={formData}
-          setFormData={setFormData}
-          handleSave={handleSave}
-        />
-      )}
+              {!loading && filteredUsers.length === 0 && (
+                <div className="text-center py-12 text-slate-500">
+                  {searchTerm ? "Nenhum resultado para a busca." : "Nenhum usuário cadastrado."}
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+      
+      <DeleteDialog
+        title="Excluir Usuário"
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen} 
+        onConfirm={handleDeleteUser}
+        isDeleting={isSubmitting} 
+        description="Tem certeza que deseja excluir este usuário?"
+        itemName={users.find(user => user.id === deletingUserId)?.name}
+      />
+      
+      <UserModal
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        user={editingUser}
+        onSave={handleSaveUser}
+        isSaving={isSubmitting} 
+      />
     </div>
   );
-};
-export default UsersPage;
+}
+export default UserPage;
