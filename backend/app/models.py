@@ -8,30 +8,52 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 class User(SQLModel, table=True):
     __tablename__ = "users"
-    id:uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     name: str
+    email: str = Field(index=True, unique=True)
+    is_active: bool = Field(default=True)
+    
     team_id: Optional[uuid.UUID] = Field(default=None, foreign_key="teams.id")
-    team: Optional["Team"] = Relationship(back_populates="members")
-    leader_of: Optional["Team"] = Relationship(
-        sa_relationship_kwargs={"uselist": False},
-        back_populates="leader"
+
+    
+    team: Optional["Team"] = Relationship(
+        back_populates="members",
+        sa_relationship_kwargs={
+            "foreign_keys": "User.team_id"
+        }
     )
+
+
+    leader_of: Optional["Team"] = Relationship(
+        back_populates="leader",
+        sa_relationship_kwargs={
+            "foreign_keys": "Team.leader_id"
+        }
+    )
+
 
 class Team(SQLModel, table=True):
     __tablename__ = "teams"
-    
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
-    name: str
 
-    leader_id: uuid.UUID = Field(
-        sa_column=Column(
-            PG_UUID(as_uuid=True), 
-            ForeignKey("users.id", use_alter=True, name="fk_team_leader"), 
-            unique=True, 
-            nullable=False
-        )
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    name: str
+    
+ 
+    leader_id: uuid.UUID = Field(unique=True, foreign_key="users.id")
+
+
+    members: List[User] = Relationship(
+        back_populates="team",
+        sa_relationship_kwargs={
+            "foreign_keys": "User.team_id"
+        }
     )
 
-    members: List[User] = Relationship(back_populates="team")
     
-    leader: User = Relationship(back_populates="leader_of")
+    leader: User = Relationship(
+        back_populates="leader_of",
+        sa_relationship_kwargs={
+            "foreign_keys": "Team.leader_id"
+        }
+    )
