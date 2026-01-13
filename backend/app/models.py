@@ -13,10 +13,13 @@ class User(SQLModel, table=True):
     name: str
     email: str = Field(index=True, unique=True)
     is_active: bool = Field(default=True)
-    
-    team_id: Optional[uuid.UUID] = Field(default=None, foreign_key="teams.id")
 
-    
+    team_id: Optional[uuid.UUID] = Field(
+        default=None,
+        foreign_key="teams.id",
+        unique=True
+    )
+
     team: Optional["Team"] = Relationship(
         back_populates="members",
         sa_relationship_kwargs={
@@ -24,11 +27,11 @@ class User(SQLModel, table=True):
         }
     )
 
-
     leader_of: Optional["Team"] = Relationship(
         back_populates="leader",
         sa_relationship_kwargs={
-            "foreign_keys": "Team.leader_id"
+            "foreign_keys": "Team.leader_id",
+            "uselist": False
         }
     )
 
@@ -38,10 +41,11 @@ class Team(SQLModel, table=True):
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     name: str
-    
- 
-    leader_id: uuid.UUID = Field(unique=True, foreign_key="users.id")
 
+    leader_id: uuid.UUID = Field(
+        foreign_key="users.id",
+        unique=True
+    )
 
     members: List[User] = Relationship(
         back_populates="team",
@@ -50,10 +54,10 @@ class Team(SQLModel, table=True):
         }
     )
 
-    
     leader: User = Relationship(
         back_populates="leader_of",
         sa_relationship_kwargs={
-            "foreign_keys": "Team.leader_id"
+            "foreign_keys": "Team.leader_id",
+            "uselist": False
         }
     )
