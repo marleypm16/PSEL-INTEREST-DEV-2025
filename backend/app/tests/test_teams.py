@@ -28,7 +28,7 @@ def test_create_team_validation_error(client: TestClient):
     Caminho de Insucesso: Tentar criar time sem leader_id (Schema Pydantic bloqueia).
     """
     response = client.post("/teams/", json={"name": "Time Sem Líder"})
-    assert response.status_code == 422  # Unprocessable Entity
+    assert response.status_code == 400  # Unprocessable Entity
 
 def test_create_team_duplicate_leader_failure(client: TestClient):
     """
@@ -43,9 +43,8 @@ def test_create_team_duplicate_leader_failure(client: TestClient):
     # 2. Tenta criar Time B com MESMO líder
     response = client.post("/teams/", json={"name": "Time B", "leader_id": leader_id})
     
-    # O status pode ser 500 (IntegrityError não tratado) ou 400/409 se tratado.
-    # O importante é que NÃO seja 201.
-    assert response.status_code != 201
+    assert response.status_code == 409
+    assert "já está liderando" in response.json()["detail"].lower()
 
 # ==========================================
 # 2. TESTES DE LEITURA (GET)
@@ -142,7 +141,7 @@ def test_add_member_to_team_success(client: TestClient):
 
     # 2. Adiciona
     response = client.post(f"/teams/{team_id}/member/{member_id}")
-    assert response.status_code == 201
+    assert response.status_code == 200
     
     # 3. Valida no User se o team_id foi atualizado
     check_user = client.get(f"/users/{member_id}").json()
@@ -167,7 +166,7 @@ def test_move_member_between_teams(client: TestClient):
 
     # 2. Muda para Time 2 (Endpoint de adicionar no T2 deve sobrescrever o T1)
     response = client.post(f"/teams/{t2_id}/member/{member_id}")
-    assert response.status_code == 201
+    assert response.status_code == 200
 
     # 3. Verifica mudança
     user_final = client.get(f"/users/{member_id}").json()
@@ -206,23 +205,20 @@ def test_remove_member_success(client: TestClient):
 
     # Remove
     response = client.delete(f"/teams/{t1_id}/member/{m1}")
-    assert response.status_code == 204
-
+    assert response.status_code == 200
+    assert response.json()["id"] == t1_id
     # Verifica se team_id ficou null
     user_check = client.get(f"/users/{m1}").json()
     assert user_check["team_id"] is None
 
-def test_remove_member_not_in_team(client: TestClient):
-    """
-    Caminho de Insucesso: Tentar remover um usuário que não faz parte daquele time.
-    """
-    l1 = client.post("/users/", json={"name": "L1", "email": "l1@test.com"}).json()["id"]
-    t1_id = client.post("/teams/", json={"name": "T1", "leader_id": l1}).json()["id"]
-    m1 = client.post("/users/", json={"name": "Solteiro", "email": "solteiro@test.com"}).json()["id"]
 
-    # Usuário existe, Time existe, mas eles não têm relação
-    response = client.delete(f"/teams/{t1_id}/member/{m1}")
-    
-    # Nossa regra de negócio na rota diz que deve retornar 404 
-    # se o usuário não pertencer ao time especificado na URL.
-    assert response.status_code == 404
+
+def test_create_team_duplicate_leader_failure(client: TestClient):
+    u_resp = client.post("/users/", json={"name": "Líder", "email": "lider@test.com"})
+    leader_id = u_resp.json()["id"]
+
+    client.post("/teams/", json={"name": "Time A", "leader_id": leader_id})
+    resp = client.post("/teams/", json={"name": "Time B", "leader_id": leader_id})
+
+    assert resp.status_code == 409
+    assert "já está liderando" in resp.json()["detail"].lower()

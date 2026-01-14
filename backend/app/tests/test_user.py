@@ -19,7 +19,10 @@ def test_create_user_success(client: TestClient):
     assert "id" in data
     assert "team_id" in data
     assert data["team_id"] is None  # Usuário nasce sem time
-
+def test_create_user_duplicate_email_conflict(client: TestClient):
+    client.post("/users/", json={"name": "A", "email": "dup@test.com"})
+    resp = client.post("/users/", json={"name": "B", "email": "dup@test.com"})
+    assert resp.status_code == 422
 def test_create_user_validation_error(client: TestClient):
     """
     Caminho de Insucesso: Tentar criar sem nome deve retornar 422 (Unprocessable Entity).
@@ -154,3 +157,9 @@ def test_delete_user_not_found(client: TestClient):
     random_id = uuid.uuid4()
     response = client.delete(f"/users/{random_id}")
     assert response.status_code == 404
+def test_delete_user_who_is_leader_conflict(client: TestClient):
+    leader_id = client.post("/users/", json={"name": "Leader", "email": "leader@test.com"}).json()["id"]
+    team_id = client.post("/teams/", json={"name": "Team", "leader_id": leader_id}).json()["id"]
+
+    resp = client.delete(f"/users/{leader_id}")
+    assert resp.status_code == 409
