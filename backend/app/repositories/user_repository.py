@@ -2,6 +2,8 @@ import uuid
 from app.models import User
 from fastapi import Depends
 from sqlalchemy.orm import selectinload
+from sqlalchemy.exc import IntegrityError 
+
 
 from sqlmodel import Session,select
 from app.core.db import get_session
@@ -45,10 +47,10 @@ class UserRepository:
         user = self.get_user_by_id(user_id)
         if user:
             if user.leader_of:
-                raise Exception("Cannot delete a user who is a team leader.")
+                raise Exception("Não é possível deletar um usuário que é líder de um time.")
             self.db_session.delete(user)
             self.db_session.commit()
         return user
     
-    def get_user_repository(db_session : Session = Depends(get_session)):
+def get_user_repository(db_session : Session = Depends(get_session)):
         return UserRepository(db_session)
