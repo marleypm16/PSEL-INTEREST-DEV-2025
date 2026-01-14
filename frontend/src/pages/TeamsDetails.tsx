@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import useTeams from "../hooks/useTeams";
 import useUsers from "../hooks/useUsers";
 import { Team } from "../types/teams";
+import { User } from "../types/users";
 import TeamModal from "../components/teamsPage/TeamModal";
 import DeleteDialog from "../components/DeleteDialog";
 
@@ -12,21 +13,25 @@ import TeamDetailList from "../components/teamsDetailPage/TeamDetailList";
 import TeamDetailAddMember from "../components/teamsDetailPage/TeamDetailAddMember";
 import TeamDetailHeader from "../components/teamsDetailPage/TeamDetailHeader";
 import TeamDetailLeaderInfo from "../components/teamsDetailPage/TeamDetailLeaderInfo";
+import TeamDetailTransferMember from "../components/teamsDetailPage/TeamDetailTransferMember";
 
 const TeamsDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const {  loading,fetchTeams, fetchTeamById, updateTeam, deleteTeam, addMemberToTeam, removeMemberFromTeam } = useTeams();
+  const {teams ,fetchTeams ,loading, fetchTeamById, updateTeam, deleteTeam, addMemberToTeam, removeMemberFromTeam } = useTeams();
   const { users } = useUsers();
   const [team, setTeam] = useState<Team | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
+  const [transferringMember, setTransferringMember] = useState<User | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
 
   useEffect(() => {
+    fetchTeams();
     fetchTeamById(id!).then(fetchedTeam => {
       setTeam(fetchedTeam);
     }).catch(() => {
@@ -34,21 +39,45 @@ const TeamsDetails = () => {
       navigate("/teams");
     });
   }, [id]);
+  const filteredUsers = users.filter(user => {
+    const isLeader = user.leader_of !== null;
 
+    const isMemberOfCurrentTeam = team?.members?.some(
+      member => member.id === user.id
+    );
 
-  const availableUsers = users.filter((user) => {
-    const isFree = !user.team_id;
-    const isCurrentLeader = team?.leader_id === user.id;
-    return isFree || isCurrentLeader;
-  });
+    return !isLeader && !isMemberOfCurrentTeam;
+})
 
-  const availableMembersToAdd = users.filter((user) => {
-    const isFree = !user.team_id;
-    const isNotInTeam = !team?.members?.some(member => member.id === user.id);
-    const isNotLeader = user.id !== team?.leader_id;
-    return isFree && isNotInTeam && isNotLeader;
-  });
-
+  const handleTransferMemberDialog = (member: User) => {
+  setTransferringMember(member);
+  setIsTransferDialogOpen(true);
+};
+    const handleTransferMember = async (memberId: string, newTeamId: string) => {
+  if (!team) return;
+  
+  try {
+    setIsSubmitting(true);
+    await removeMemberFromTeam(memberId, team.id);
+    await addMemberToTeam(newTeamId, memberId);
+    
+    setTeam(prevTeam => {
+      if (!prevTeam) return prevTeam;
+      return {
+        ...prevTeam,
+        members: prevTeam.members?.filter(m => m.id !== memberId)
+      };
+    });
+    
+    toast.success("Membro transferido com sucesso!");
+    setIsTransferDialogOpen(false);
+    setTransferringMember(null);
+  } catch (error) {
+    toast.error("Erro ao transferir membro.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   const handleDeleteTeam = async () => {
     if (!team) return;
     
@@ -69,10 +98,10 @@ const TeamsDetails = () => {
     
     try {
       setIsSubmitting(true);
-      await updateTeam(team.id, teamData);
+      const updatedTeam = await updateTeam(team.id, teamData);
+      setTeam(updatedTeam);
       toast.success("Equipe atualizada com sucesso!");
       setIsEditModalOpen(false);
-      await fetchTeams();
     } catch (error) {
       toast.error("Erro ao atualizar equipe.");
     } finally {
@@ -85,10 +114,10 @@ const TeamsDetails = () => {
     
     try {
       setIsSubmitting(true);
-      await addMemberToTeam(team.id, selectedUserId);
+      const updatedTeam = await addMemberToTeam(team.id, selectedUserId);
+      setTeam(updatedTeam);
       toast.success("Membro adicionado com sucesso!");
       setSelectedUserId("");
-      await fetchTeams();
     } catch (error) {
       toast.error("Erro ao adicionar membro.");
     } finally {
@@ -107,9 +136,15 @@ const TeamsDetails = () => {
     try {
       setIsSubmitting(true);
       await removeMemberFromTeam(removingMemberId, team.id);
+      setTeam(prevTeam => {
+        if (!prevTeam) return prevTeam;
+        return {
+          ...prevTeam,
+          members: prevTeam.members?.filter(m => m.id !== removingMemberId)
+        };
+      });
       toast.success("Membro removido com sucesso!");
       setIsRemoveDialogOpen(false);
-      await fetchTeams();
     } catch (error) {
       toast.error("Erro ao remover membro.");
     } finally {
@@ -131,13 +166,14 @@ const TeamsDetails = () => {
       <TeamDetailHeader navigate={navigate} setIsEditModalOpen={setIsEditModalOpen} setIsDeleteDialogOpen={setIsDeleteDialogOpen} team={team} />
 
       {/* Team Info */}
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Leader Info */}
         <TeamDetailLeaderInfo team={team} />
 
         {/* Add Member */}
         <TeamDetailAddMember 
-          availableMembersToAdd={availableMembersToAdd} 
+          availableMembersToAdd={filteredUsers} 
           selectedUserId={selectedUserId}
           setSelectedUserId={setSelectedUserId}
           handleAddMember={handleAddMember}
@@ -146,7 +182,11 @@ const TeamsDetails = () => {
       </div>
 
       {/* Members List */}
-      <TeamDetailList team={team} handleRemoveMemberDialog={handleRemoveMemberDialog} />
+      <TeamDetailList 
+        team={team} 
+        handleRemoveMemberDialog={handleRemoveMemberDialog}
+        handleTransferMemberDialog={handleTransferMemberDialog}
+      />
 
       {/* Modals */}
       <TeamModal
@@ -155,7 +195,8 @@ const TeamsDetails = () => {
         onSave={handleSaveTeam}
         team={team}
         isSaving={isSubmitting}
-        availableUsers={availableUsers}
+        availableUsers={users}
+        existingTeams={teams}
       />
 
       <DeleteDialog
@@ -176,6 +217,15 @@ const TeamsDetails = () => {
         title="Remover Membro"
         description="Tem certeza que deseja remover este membro da equipe?"
         itemName={team.members?.find(m => m.id === removingMemberId)?.name}
+      />
+
+      <TeamDetailTransferMember
+        open={isTransferDialogOpen}
+        onOpenChange={setIsTransferDialogOpen}
+        currentTeam={team}
+        member={transferringMember}
+        availableTeams={teams.filter(t => t.id !== team.id)}
+        onTransfer={handleTransferMember}
       />
     </div>
   );
