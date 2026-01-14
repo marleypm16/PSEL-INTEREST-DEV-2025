@@ -7,11 +7,10 @@ from app.schemas.commom import UserBase, UserReadSimple, TeamReadSimple # Import
 class UserCreate(UserBase):
     pass
 class UserUpdate(UserBase):
-    pass
+    name: Optional[str] = None
+    email: Optional[str] = None
 
-# Schema de Leitura Rico (Com relacionamentos)
 class UserReadWithTeam(UserReadSimple):
-    # Usamos o TeamReadSimple que veio do common.py
-    # Sem aspas, sem conflito!
+
     team: Optional[TeamReadSimple] = None
     leader_of: Optional[TeamReadSimple] = None
