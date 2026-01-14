@@ -4,7 +4,6 @@ import uuid
 from typing import Optional
 import re
 
-# --- USER BASIC ---
 class UserBase(BaseModel):
     
     name: str = Field(..., description="Nome do usuário")
@@ -14,11 +13,9 @@ class UserBase(BaseModel):
     @classmethod
     def validar_nome(cls, v: str):
         v = v.strip()
-        # ADICIONEI A VALIDAÇÃO DE TAMANHO AQUI
         if len(v) < 2:
             raise ValueError('Nome inválido: deve ter pelo menos 2 caracteres')
             
-        # Outras validações que já existiam
         if v.isdigit():
             raise ValueError('Nome inválido: não deve conter apenas números')
         return v
@@ -37,7 +34,6 @@ class UserReadSimple(UserBase):
     id: uuid.UUID
     team_id: Optional[uuid.UUID] = None
 
-# --- TEAM BASIC ---
 class TeamBase(BaseModel):
     name: str = Field(..., description="Nome do time")
     leader_id: uuid.UUID = Field(None, description="ID do líder")
