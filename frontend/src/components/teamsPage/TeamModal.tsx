@@ -28,6 +28,7 @@ interface TeamModalProps {
   isSaving?: boolean;
   availableUsers: User[]; // Lista de usuários para selecionar o líder
   existingTeams: Team[]; // Lista de equipes existentes para validação do líder
+  errors: Record<string, string>; // Erros de validação
 }
 
 const TeamModal = ({ 
@@ -36,23 +37,13 @@ const TeamModal = ({
   team, 
   onSave, 
   isSaving,
-  availableUsers,
-  existingTeams 
+  availableUsers, 
+  errors
 }: TeamModalProps) => {
     
-  const isUserLeaderOfOtherTeam = (userId: string) => {
-    return existingTeams.some(
-      (t) => t.leader_id === userId && t.id !== team?.id
-    );
-  };
+ 
 
-  // Obter o nome da equipe da qual o usuário é líder
-  const getTeamWhereUserIsLeader = (userId: string) => {
-    const leaderTeam = existingTeams.find(
-      (t) => t.leader_id === userId && t.id !== team?.id
-    );
-    return leaderTeam?.name;
-  };
+
 
   const [formData, setFormData] = useState<CreateTeamDTO>({
     name: "",
@@ -102,6 +93,9 @@ const TeamModal = ({
                 placeholder="Ex: Squad Alpha"
                 required
               />
+              {errors?.name && (
+                <span className="text-red-500 text-sm">{errors.name}</span>
+              )}
             </div>
 
             {/* Campo Líder (Obrigatório) */}
@@ -118,29 +112,44 @@ const TeamModal = ({
                 </SelectTrigger>
                 <SelectContent>
                   {availableUsers.map((user) => {
-                    const isLeaderElsewhere = isUserLeaderOfOtherTeam(user.id);
-                    const leaderTeamName = getTeamWhereUserIsLeader(user.id);
                     return (
                       <SelectItem
-                        key={user.id}
-                        value={user.id}
-                        disabled={isLeaderElsewhere}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1">
-                            <span>{user.name}</span>
-                            {isLeaderElsewhere && (
-                              <span className="text-xs text-orange-600 ml-2">
-                                (Líder de "{leaderTeamName}")
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </SelectItem>
+                    key={user.id}
+                    value={user.id}
+                    // CORREÇÃO AQUI:
+                    // Desabilita APENAS se for líder E o time que ele lidera NÃO for o time atual (team.id)
+                    disabled={
+                      user.leader_of && // É líder?
+                      user.leader_of.id !== team?.id // É de OUTRO time?
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <span>{user.name}</span>
+                        
+                        {/* CORREÇÃO VISUAL: Mostra aviso apenas se for líder de OUTRO time */}
+                        {user.leader_of && user.leader_of.id !== team?.id && (
+                          <span className="text-xs text-orange-600 ml-2">
+                            (Líder de "{user.leader_of.name}")
+                          </span>
+                        )}
+                        
+                        {/* OPCIONAL: Indicar visualmente que é o líder ATUAL deste time */}
+                        {user.leader_of && user.leader_of.id === team?.id && (
+                          <span className="text-xs text-green-600 ml-2 font-bold">
+                            (Atual)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </SelectItem>
                     );
                   })}
                 </SelectContent>
               </Select>
+              {errors?.leader_id && (
+                <span className="text-red-500 text-sm">{errors.leader_id}</span>
+              )}
               {availableUsers.length === 0 && (
                 <p className="text-xs text-red-500">
                   É necessário ter usuários livres para criar uma equipe.
