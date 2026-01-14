@@ -22,22 +22,6 @@ const TeamsPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState<Team | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const availableUsers = useMemo(() => {
-    return users.filter((user) =>{
-      // 1. Verifica se o usuário não tem time (está livre)
-    const isFree = !user.team_id;
-
-    // 2. Verifica se é o líder da equipe que estamos editando
-    // (O ?. garante que não quebre se editingTeam for null)
-    const isCurrentLeader = editingTeam?.leader_id === user.id;
-
-    // REGRA FINAL: Entra na lista se estiver livre OU se for o líder atual
-    return isFree || isCurrentLeader;
-    })
-  }, [users,editingTeam]);
-
-
-
   useEffect(() =>{
     fetchTeams();
   }, [])
@@ -137,7 +121,8 @@ const TeamsPage = () => {
         onSave={handleSaveTeam}
         team={editingTeam}
         isSaving={isSubmitting}
-        availableUsers={availableUsers}
+        availableUsers={users}
+        existingTeams={teams}
       />
 
       <DeleteDialog
