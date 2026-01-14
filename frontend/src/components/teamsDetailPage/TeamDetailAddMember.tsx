@@ -8,9 +8,10 @@ import {
 import { Card, CardHeader, CardTitle,CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { UserPlus, Loader2 } from "lucide-react";
+import { User } from "../../types/users";
 
 interface TeamDetailAddMemberProps {
-    availableMembersToAdd: Array<{ id: string; name: string }>;
+    availableMembersToAdd: User[];
     selectedUserId: string;
     setSelectedUserId: (id: string) => void;
     handleAddMember: () => void;
@@ -38,15 +39,16 @@ const TeamDetailAddMember = ({
                   <SelectValue placeholder="Selecione um usuário" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableMembersToAdd.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
-                  {availableMembersToAdd.length === 0 && (
-                    <SelectItem value="none" disabled>
-                      Nenhum usuário disponível
-                    </SelectItem>
+                  {availableMembersToAdd.length > 0 ? (
+                    availableMembersToAdd.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name} - Equipe {user.team ? user.team.name : "Nenhuma"}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="p-4 text-sm text-slate-500">
+                      Nenhum usuário disponível para adicionar.
+                    </div>
                   )}
                 </SelectContent>
               </Select>
