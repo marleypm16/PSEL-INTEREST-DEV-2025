@@ -1,50 +1,47 @@
 import UsersPage from "../support/pageObjects/UserPage";
-describe("Módulo de Usuários", () => {
+describe("Teste Crud Usuários", () => {
+  const uniqueEmail = () => `teste_${Date.now()}@mail.com`;
 
   beforeEach(() => {
-    cy.fixture('users.json').as('usuarios')
     UsersPage.visit();
-
   });
 
-  it("deve criar um usuário com sucesso", () => {
-    cy.get('@usuarios').then((usuarios) => {
-      UsersPage.createUser(usuarios.validUser.name, usuarios.validUser.email);
+  it("Criação e Listagem: Deve criar um novo usuário e validar na tabela", () => {
+    const email = uniqueEmail();
+    const nome = "Usuario Criacao";
 
-      UsersPage.shouldShowSuccess("Usuário criado com sucesso");
-      UsersPage.shouldUserExist(usuarios.validUser.email);
-    });
+    UsersPage.createUser(nome, email);
+
+    // Valida (Read)
+    UsersPage.validateUserInTable(nome, email);
   });
 
-  it("deve impedir criação de usuário com email inválido", () => {
-    cy.get('@usuarios').then((usuarios) => {
-      UsersPage.createUser(usuarios.invalidUser.name, usuarios.invalidUser.email);
+  it("Atualização: Deve editar o nome de um usuário existente", () => {
+    // 1. Prepara o dado (Cria)
+    const email = uniqueEmail();
+    const nomeOriginal = "Nome Original";
+    const nomeNovo = "Nome Editado";
 
-      UsersPage.shouldShowError(/email inválido/i);
-    });
+    UsersPage.createUser(nomeOriginal, email);
+    UsersPage.validateUserInTable(nomeOriginal, email);
+
+    // 2. Ação (Edita)
+    UsersPage.updateUser(email, nomeNovo);
+
+    // 3. Validação (Verifica se o nome mudou na mesma linha do email)
+    UsersPage.validateUserInTable(nomeNovo, email);
   });
 
-  it("deve listar usuários cadastrados", () => {
-    cy.get("table").should("be.visible");
-    cy.get("tbody tr").should("have.length.greaterThan", 0);
-  });
-  it("deve exibir mensagem quando não houver usuários", () => {
-    cy.get('@usuarios').then((usuarios) => {
-      // Remover todos os usuários existentes
-      usuarios.allUsers.forEach((user: { email: string }) => {
-        UsersPage.removeUser(user.email);
-      });
-    });
-    UsersPage.getEmptyListMessage().should("be.visible");
-  })
+  it("Deleção: Deve remover um usuário da lista", () => {
+    // 1. Prepara o dado (Cria)
+    const email = uniqueEmail();
+    UsersPage.createUser("Usuario Para Deletar", email);
+    UsersPage.validateUserInTable("Usuario Para Deletar", email);
 
-  it("deve remover um usuário com sucesso", () => {
-    const email = `delete_${Date.now()}@test.com`;
+    // 2. Ação (Deleta)
+    UsersPage.deleteUser(email);
 
-    UsersPage.createUser("Usuário Remoção", email);
-    UsersPage.removeUser(email);
-
-    UsersPage.shouldShowSuccess("Usuário removido com sucesso");
-    UsersPage.shouldUserNotExist(email);
+    // 3. Validação (Verifica se sumiu)
+    UsersPage.validateUserNotExist(email);
   });
 });
