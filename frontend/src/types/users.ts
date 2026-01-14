@@ -12,5 +12,9 @@ export interface User {
 export interface CreateUserDTO {
   name: string;
   email: string;
-  team_id: string;
+}
+
+export interface UpdateUserDTO {
+  name?: string;
+  email?: string;
 }

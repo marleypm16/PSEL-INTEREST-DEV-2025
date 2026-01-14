@@ -12,3 +12,8 @@ export interface CreateTeamDTO {
   name: string;
   leader_id: string;
 }
+
+export interface UpdateTeamDTO {
+  name?: string;
+  leader_id?: string;
+}
