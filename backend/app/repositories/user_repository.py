@@ -1,6 +1,8 @@
 import uuid
 from app.models import User
 from fastapi import Depends
+from sqlalchemy.orm import selectinload
+
 from sqlmodel import Session,select
 from app.core.db import get_session
 class UserRepository:
@@ -8,10 +10,18 @@ class UserRepository:
         self.db_session = db_session
 
     def get_user_by_id(self, user_id):
-        return self.db_session.get(User, user_id)
+        statement = select(User).where(User.id == user_id).options(
+            selectinload(User.team),
+            selectinload(User.leader_of)
+        )
+        return self.db_session.exec(statement).first()
     
     def get_all_users(self):
-        return self.db_session.exec(select(User)).all()
+        statement = select(User).options(
+            selectinload(User.team),
+            selectinload(User.leader_of)
+        )
+        return self.db_session.exec(statement).all()
 
     def create_user(self, user: User):
         self.db_session.add(user)
