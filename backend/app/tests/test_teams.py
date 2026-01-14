@@ -10,7 +10,7 @@ def test_create_team_success(client: TestClient):
     Caminho Feliz: Deve criar um time, desde que tenha um líder válido.
     """
     # 1. Cria um usuário para ser líder
-    user_resp = client.post("/users/", json={"name": "Capitão"})
+    user_resp = client.post("/users/", json={"name": "Capitão", "email": "capitao@test.com"})
     leader_id = user_resp.json()["id"]
 
     # 2. Cria o time
@@ -36,7 +36,7 @@ def test_create_team_duplicate_leader_failure(client: TestClient):
     Um usuário não pode liderar dois times. O Banco deve bloquear.
     """
     # 1. Setup: Cria Líder e Time A
-    u_resp = client.post("/users/", json={"name": "Líder Ocupado"})
+    u_resp = client.post("/users/", json={"name": "Líder Ocupado", "email": "lider@test.com"})
     leader_id = u_resp.json()["id"]
     client.post("/teams/", json={"name": "Time A", "leader_id": leader_id})
 
@@ -56,7 +56,7 @@ def test_read_teams_list(client: TestClient):
     Caminho Feliz: Listar times.
     """
     # Setup rápido
-    u1 = client.post("/users/", json={"name": "L1"}).json()["id"]
+    u1 = client.post("/users/", json={"name": "L1", "email": "l1@test.com"}).json()["id"]
     client.post("/teams/", json={"name": "T1", "leader_id": u1})
     
     response = client.get("/teams/")
@@ -80,7 +80,7 @@ def test_update_team_name_success(client: TestClient):
     Caminho Feliz: Mudar apenas o nome do time.
     """
     # Setup
-    u1 = client.post("/users/", json={"name": "L1"}).json()["id"]
+    u1 = client.post("/users/", json={"name": "L1", "email": "l1@test.com"}).json()["id"]
     t1 = client.post("/teams/", json={"name": "Nome Velho", "leader_id": u1}).json()
     team_id = t1["id"]
 
@@ -107,7 +107,7 @@ def test_delete_team_success(client: TestClient):
     """
     Caminho Feliz: Apagar time existente.
     """
-    u1 = client.post("/users/", json={"name": "L1"}).json()["id"]
+    u1 = client.post("/users/", json={"name": "L1", "email": "l1@test.com"}).json()["id"]
     t1 = client.post("/teams/", json={"name": "T1", "leader_id": u1}).json()
     team_id = t1["id"]
 
@@ -135,10 +135,10 @@ def test_add_member_to_team_success(client: TestClient):
     Caminho Feliz: Adicionar um usuário livre a um time.
     """
     # 1. Setup: Time e Usuário
-    leader_id = client.post("/users/", json={"name": "Lider"}).json()["id"]
+    leader_id = client.post("/users/", json={"name": "Lider", "email": "lider@test.com"}).json()["id"]
     team_id = client.post("/teams/", json={"name": "Time X", "leader_id": leader_id}).json()["id"]
     
-    member_id = client.post("/users/", json={"name": "Membro Novo"}).json()["id"]
+    member_id = client.post("/users/", json={"name": "Membro Novo", "email": "membro@test.com"}).json()["id"]
 
     # 2. Adiciona
     response = client.post(f"/teams/{team_id}/member/{member_id}")
@@ -153,13 +153,13 @@ def test_move_member_between_teams(client: TestClient):
     Caminho Feliz (Regra Crítica): Mover usuário do Time A para o Time B.
     """
     # Setup: 2 Times
-    l1 = client.post("/users/", json={"name": "L1"}).json()["id"]
+    l1 = client.post("/users/", json={"name": "L1", "email": "l1@test.com"}).json()["id"]
     t1_id = client.post("/teams/", json={"name": "T1", "leader_id": l1}).json()["id"]
 
-    l2 = client.post("/users/", json={"name": "L2"}).json()["id"]
+    l2 = client.post("/users/", json={"name": "L2", "email": "l2@test.com"}).json()["id"]
     t2_id = client.post("/teams/", json={"name": "T2", "leader_id": l2}).json()["id"]
 
-    member_id = client.post("/users/", json={"name": "Viajante"}).json()["id"]
+    member_id = client.post("/users/", json={"name": "Viajante", "email": "viajante@test.com"}).json()["id"]
 
     # 1. Entra no Time 1
     client.post(f"/teams/{t1_id}/member/{member_id}")
@@ -178,38 +178,28 @@ def test_add_member_not_found(client: TestClient):
     """
     Caminho de Insucesso: Usuário ou Time inexistente.
     """
-    # Debug: Vamos ver o que está acontecendo na criação do usuário
-    resp = client.post("/users/", json={"name": "L1"})
-    
-    # SE ISSO IMPRIMIR ALGO DIFERENTE DE 201, SABEREMOS O ERRO
-    print(f"\nSTATUS: {resp.status_code}")
-    print(f"BODY: {resp.json()}")
-
-    # A linha que dava erro:
-    u1 = resp.json()["id"]
-    print(f"USER ID CRIADO: {u1}")
+    # Setup
+    u1 = client.post("/users/", json={"name": "L1", "email": "l1@test.com"}).json()["id"]
     t1_id = client.post("/teams/", json={"name": "T1", "leader_id": u1}).json()["id"]
     fake_id = uuid.uuid4()
 
     # Caso 1: Time existe, Usuário não
-    resp1 = client.post(f"/teams/{t1_id}/membro/{fake_id}")
-    print(f"RESP1 STATUS: {resp1.status_code}")
+    resp1 = client.post(f"/teams/{t1_id}/member/{fake_id}")
     assert resp1.status_code == 404
 
     # Caso 2: Usuário existe, Time não
-    valid_user = client.post("/users/", json={"name": "U2"}).json()["id"]
+    valid_user = client.post("/users/", json={"name": "U2", "email": "u2@test.com"}).json()["id"]
     resp2 = client.post(f"/teams/{fake_id}/member/{valid_user}")
-    print(f"RESP2 STATUS: {resp2.status_code}")
-    assert resp2.status_code == 404 # Ou 500 dependendo do FK, mas nossa rota trata isso
+    assert resp2.status_code == 404
 
 def test_remove_member_success(client: TestClient):
     """
     Caminho Feliz: Remover membro do time.
     """
     # Setup
-    l1 = client.post("/users/", json={"name": "L1"}).json()["id"]
+    l1 = client.post("/users/", json={"name": "L1", "email": "l1@test.com"}).json()["id"]
     t1_id = client.post("/teams/", json={"name": "T1", "leader_id": l1}).json()["id"]
-    m1 = client.post("/users/", json={"name": "Membro"}).json()["id"]
+    m1 = client.post("/users/", json={"name": "Membro", "email": "membro@test.com"}).json()["id"]
     
     # Adiciona primeiro
     client.post(f"/teams/{t1_id}/member/{m1}")
@@ -226,9 +216,9 @@ def test_remove_member_not_in_team(client: TestClient):
     """
     Caminho de Insucesso: Tentar remover um usuário que não faz parte daquele time.
     """
-    l1 = client.post("/users/", json={"name": "L1"}).json()["id"]
+    l1 = client.post("/users/", json={"name": "L1", "email": "l1@test.com"}).json()["id"]
     t1_id = client.post("/teams/", json={"name": "T1", "leader_id": l1}).json()["id"]
-    m1 = client.post("/users/", json={"name": "Solteiro"}).json()["id"]
+    m1 = client.post("/users/", json={"name": "Solteiro", "email": "solteiro@test.com"}).json()["id"]
 
     # Usuário existe, Time existe, mas eles não têm relação
     response = client.delete(f"/teams/{t1_id}/member/{m1}")

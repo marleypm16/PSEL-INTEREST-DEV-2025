@@ -9,12 +9,13 @@ def test_create_user_success(client: TestClient):
     """
     Caminho Feliz: Deve criar um usuário e retornar ID e Status 201.
     """
-    payload = {"name": "Desenvolvedor Python"}
+    payload = {"name": "Desenvolvedor Python", "email": "dev@test.com"}
     response = client.post("/users/", json=payload)
 
     assert response.status_code == 201
     data = response.json()
     assert data["name"] == payload["name"]
+    assert data["email"] == payload["email"]
     assert "id" in data
     assert "team_id" in data
     assert data["team_id"] is None  # Usuário nasce sem time
@@ -44,8 +45,8 @@ def test_read_users_list(client: TestClient):
     Caminho Feliz: Deve listar usuários cadastrados.
     """
     # Cria 2 usuários para ter o que listar
-    client.post("/users/", json={"name": "User A"})
-    client.post("/users/", json={"name": "User B"})
+    client.post("/users/", json={"name": "User A", "email": "usera@test.com"})
+    client.post("/users/", json={"name": "User B", "email": "userb@test.com"})
 
     response = client.get("/users/")
     assert response.status_code == 200
@@ -57,7 +58,7 @@ def test_read_user_by_id_success(client: TestClient):
     Caminho Feliz: Busca um usuário específico pelo ID.
     """
     # 1. Cria
-    create_resp = client.post("/users/", json={"name": "Busca ID"})
+    create_resp = client.post("/users/", json={"name": "Busca ID", "email": "buscaid@test.com"})
     user_id = create_resp.json()["id"]
 
     # 2. Busca
@@ -84,7 +85,7 @@ def test_update_user_success(client: TestClient):
     Caminho Feliz: Atualiza o nome de um usuário.
     """
     # 1. Cria
-    create_resp = client.post("/users/", json={"name": "Nome Antigo"})
+    create_resp = client.post("/users/", json={"name": "Nome Antigo", "email": "antigo@test.com"})
     user_id = create_resp.json()["id"]
 
     # 2. Atualiza (PUT)
@@ -111,7 +112,7 @@ def test_update_user_validation_ignores_extra_fields(client: TestClient):
     Caminho de Segurança: Se enviar campos extras, a API deve ignorar ou validar,
     mas não pode quebrar ou salvar lixo.
     """
-    create_resp = client.post("/users/", json={"name": "Teste Extra"})
+    create_resp = client.post("/users/", json={"name": "Teste Extra", "email": "extra@test.com"})
     user_id = create_resp.json()["id"]
 
     # Envia campo "admin: true" que não existe no Schema
@@ -134,7 +135,7 @@ def test_delete_user_success(client: TestClient):
     Caminho Feliz: Deleta usuário e garante que ele sumiu.
     """
     # 1. Cria
-    create_resp = client.post("/users/", json={"name": "Vou ser deletado"})
+    create_resp = client.post("/users/", json={"name": "Vou ser deletado", "email": "deletado@test.com"})
     user_id = create_resp.json()["id"]
 
     # 2. Deleta
