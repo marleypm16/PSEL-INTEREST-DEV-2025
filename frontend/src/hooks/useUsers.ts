@@ -7,7 +7,7 @@ import {
   deleteUser
 } from "../services/userService";
 
-export function useUsers() {
+const useUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,3 +56,4 @@ export function useUsers() {
     deleteUser: handleDeleteUser,
   };
 }
+export default useUsers;
