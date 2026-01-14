@@ -9,7 +9,11 @@ Este é o frontend do projeto, construído com **Vite**, **React** e **TypeScrip
 - **[TypeScript](https://www.typescriptlang.org/)**: Superset tipado de JavaScript.
 - **[React Router DOM](https://reactrouter.com/)**: Gerenciamento de rotas.
 - **Axios**: Cliente HTTP (configurado para comunicação com o backend).
-- **CSS**: Estilização customizada com variáveis CSS e animações.
+- **TailwindCSS** – Estilização customizada com variáveis CSS e animações.
+- **ShadCN UI** – Componentes reutilizáveis
+- **Lucide-react** – Ícones
+- **Sonner** – Feedback visual (toasts)
+- **Cypress**  – Testes E2E do módulo de usuários
 
 ## 🛠️ Configuração e Execução
 
@@ -25,6 +29,11 @@ Certifique-se de ter o **Node.js** instalado.
    npm install
    ```
 
+3. **Configure o endpoint da API no arquivo .env (com base no .env.example)**
+   - VITE_API_URL=http://localhost:8000/api/v1
+
+
+
 3. **Inicie o servidor de desenvolvimento:**
    ```bash
    npm run dev
@@ -37,21 +46,45 @@ Certifique-se de ter o **Node.js** instalado.
 
 A estrutura de pastas foi organizada para facilitar a escalabilidade e manutenção:
 
-- **`src/components`**: Componentes de UI reutilizáveis (ex: `QuestCard`, `Header`, `InfoPanel`).
-- **`src/data`**: Arquivos de dados estáticos ou configurações (ex: `questsData.ts`).
-- **`src/hooks`**: Hooks customizados e Context API (ex: `useQuestContext` para gerenciar o progresso das quests).
-- **`src/layouts`**: Estruturas de layout que envolvem as páginas (ex: `MainLayout`).
-- **`src/pages`**: Componentes que representam páginas completas (ex: `LandingPage`, `QuestPage`).
+- **`src/components`**: Componentes de UI reutilizáveis e Componentes organizados por página
+- **`src/hooks`**: Encapsulam estado, loading e erros.
+- **`src/layouts`**: Estruturas de layout que envolvem as páginas 
+- **`src/pages`**: Componentes que representam páginas completas 
+- **`src/services`**: Centralização das chamadas HTTP
 
-## 🧩 Funcionalidades Principais
+ ## 🧩 Funcionalidades Implementadas
 
-- **Navegação**: Roteamento entre a listagem de quests e os detalhes de cada desafio.
-- **Gerenciamento de Estado**: Persistência do progresso do usuário utilizando Context API e LocalStorage.
-- **Design Responsivo**: Interface adaptável para diferentes tamanhos de tela com animações fluidas.
+- CRUD completo de usuários
+
+- CRUD completo de equipes
+
+- Associação e remoção de membros
+
+- Visualização do líder e membros por equipe
+
+## Feedback visual para:
+
+- Carregamento
+
+- Sucesso
+
+- Erro
+
+- conflitos de regra de negócio (ex: usuário já pertence a outra equipe)
+
+ ## Interface responsiva:
+
+- Tabela no desktop
+
+- Cards no mobile
 
 ## 🔗 Integração com Backend
 
-O frontend está configurado para se comunicar com a API backend. Certifique-se de que o backend esteja rodando (geralmente na porta `8000`) para que as funcionalidades que dependem de dados dinâmicos funcionem corretamente.
+O frontend está configurado para se comunicar com a API backend. Certifique-se de que o backend esteja rodando (geralmente na porta `8000`) para que as funcionalidades que dependem de dados dinâmicos funcionem corretamente verifique no .env.example e coloque o caminho da.
+## 🧪 Testes
 
+- Implementados testes E2E com Cypress para o CRUD de usuários
+
+- Utilização de seletores estáveis com data-cy para maior robustez
 ---
 *Desenvolvido para o Desafio Técnico Full-Stack.*
