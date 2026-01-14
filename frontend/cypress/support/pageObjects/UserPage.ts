@@ -1,59 +1,44 @@
- class UsersPage {
+class UsersPage {
   visit() {
     cy.visit("/users");
   }
 
-  openCreateModal() {
+
+  createUser(name: string, email: string) {
     cy.get("[data-cy='add-user-button']").click();
-  }
-
-  fillName(name: string) {
-    cy.get("[data-cy='name']").clear().type(name);
-  }
-
-  fillEmail(email: string) {
-    cy.get("[data-cy='email']").clear().type(email);
-  }
-
-  submit() {
+    this.fillForm(name, email);
     cy.get("[data-cy='save']").click();
   }
-  getDeleteButton() {
-    return cy.get("[data-cy='delete-user-button']");
-  }
-  getEmptyListMessage() {
-    return cy.get("[data-cy='empty-list-message']").contains("Nenhum usuário cadastrado.");
-  }
 
- 
-  createUser(name: string, email: string) {
-    this.openCreateModal();
-    this.fillName(name);
-    this.fillEmail(email);
-    this.submit();
-  }
-
-  removeUser(email: string) {
-    this.getDeleteButton().should("be.visible").click();
-    cy.get("[data-cy='confirm-delete']").click();
-    this.shouldUserNotExist(email);
+  updateUser(currentEmail: string, newName: string) {
+    this.getRowByEmail(currentEmail).find("[data-cy='edit-button']").click();
     
+    cy.get("[data-cy='name']").clear().type(newName);
+    cy.get("[data-cy='save']").click();
   }
 
-  shouldShowSuccess(message: string) {
-    cy.contains(message).should("be.visible");
+  deleteUser(email: string) {
+    this.getRowByEmail(email).find("[data-cy='delete-button']").click();
+    
+    cy.get("[data-cy='confirm-delete-button']").should("be.visible").click();
   }
 
-  shouldShowError(message: RegExp | string) {
-    cy.contains(message).should("be.visible");
+  private fillForm(name: string, email: string) {
+    cy.get("[data-cy='name']").should("be.visible").type(name);
+    cy.get("[data-cy='email']").should("be.visible").type(email);
   }
 
-  shouldUserExist(email: string) {
-    cy.contains(email).should("be.visible");
+  getRowByEmail(email: string) {
+    return cy.contains("td", email).parents("tr");
   }
 
-  shouldUserNotExist(email: string) {
-    cy.contains(email).should("not.exist");
+  validateUserInTable(name: string, email: string) {
+    this.getRowByEmail(email).should("contain.text", name);
+  }
+
+  validateUserNotExist(email: string) {
+    cy.contains("td", email).should("not.exist");
   }
 }
+
 export default new UsersPage();
