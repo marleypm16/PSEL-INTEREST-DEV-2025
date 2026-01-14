@@ -1,81 +1,141 @@
-import { addMember, createTeam, deleteTeam, getTeams, removeMember, updateTeam } from "../services/teamService";
+import {
+  addMember,
+  createTeam,
+  deleteTeam,
+  getTeamById,
+  getTeams,
+  removeMember,
+  updateTeam
+} from "../services/teamService";
+
 import { CreateTeamDTO, Team } from "@/types/teams";
 import { useState } from "react";
 import { toast } from "sonner";
 
 const useTeams = () => {
-    const [teams, setTeams] = useState<Team[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [loading, setLoading] = useState(false);
 
-
-    const fetchTeams = async () => {
-        setLoading(true);
-       try {
-            const data = await getTeams();
-            setTeams(data);
-            
-       } catch (error) {
-            toast.error("Erro ao buscar equipes");
-       }finally{
-            setLoading(false);
-       }
-    };
-    const handleCreateTeam = async (team: CreateTeamDTO) => {
-        const newTeam = await createTeam(team);
-        setTeams(prev => [...prev, newTeam]);
-        fetch
-        return newTeam;
-    }
-    const handleUpdateTeam = async (id: string, team: CreateTeamDTO) => {
-        const updated = await updateTeam(id, team);
-        setTeams(prev =>
-            prev.map(t => (t.id === id ? updated : t))
-        );
-        return updated;
-    }
-    const handleDeleteTeam = async (id: string) => {
-        await deleteTeam(id);
-        setTeams(prev => prev.filter(t => t.id !== id));
-    }
-   const handleAddMemberToTeam = async (teamId: string, userId: string) => {
-        // Chama o service
-        const updatedTeam = await addMember(teamId, userId);
-        
-        // Atualiza a lista localmente para refletir a mudança sem refetch
-        setTeams(prev => prev.map(t => 
-            t.id === teamId ? updatedTeam : t
-        ));
-        
-        return updatedTeam;
-    };
-    
-    const handleRemoveMemberFromTeam = async (teamId: string, userId: string) => {
-    // 1. Chama a API (se der erro, vai pro catch do componente e não executa o setTeams)
-    await removeMember(teamId, userId); 
-
-    // 2. Atualiza o estado MANUALMENTE
-    setTeams(prev => prev.map(team => {
-        // Se não for a equipe mexida, retorna ela igual
-        if (team.id !== teamId) return team;
-
-        // Se for a equipe alvo, cria uma cópia removendo APENAS aquele membro
-        return {
-            ...team,
-            // Assume que dentro de 'team' existe um array 'members' ou 'users'
-            members: team.members?.filter(member => member.id !== userId)
-        };
+  const removeUserFromAllTeams = (teams: Team[], userId: string) =>
+    teams.map(team => ({
+      ...team,
+      members: team.members?.filter(m => m.id !== userId)
     }));
-}
-    return {
-        teams,
-        loading,
-        fetchTeams,
-        createTeam:handleCreateTeam,
-        updateTeam:handleUpdateTeam,
-        deleteTeam:handleDeleteTeam,
-        addMemberToTeam:handleAddMemberToTeam,
-        removeMemberFromTeam:handleRemoveMemberFromTeam
-    };
-}
+
+  const fetchTeams = async () => {
+    setLoading(true);
+    try {
+      const data = await getTeams();
+      setTeams(data);
+    } catch {
+      toast.error("Erro ao buscar equipes");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTeamById = async (id: string) => {
+    return await getTeamById(id);
+  };
+
+  const handleCreateTeam = async (teamData: CreateTeamDTO) => {
+    const newTeam = await createTeam(teamData);
+    const leaderId = newTeam.leader_id;
+
+    setTeams(prev => {
+      const cleaned = leaderId
+        ? removeUserFromAllTeams(prev, leaderId)
+        : prev;
+
+      return [...cleaned, newTeam];
+    });
+
+    return newTeam;
+  };
+
+  const handleUpdateTeam = async (id: string, teamData: CreateTeamDTO) => {
+    const updatedTeam = await updateTeam(id, teamData);
+    const leaderId = updatedTeam.leader_id;
+
+    setTeams(prev => {
+      const cleaned = leaderId
+        ? removeUserFromAllTeams(prev, leaderId)
+        : prev;
+
+      return cleaned.map(team =>
+        team.id === id ? updatedTeam : team
+      );
+    });
+
+    return updatedTeam;
+  };
+
+  const handleDeleteTeam = async (id: string) => {
+    await deleteTeam(id);
+    setTeams(prev => prev.filter(t => t.id !== id));
+  };
+
+  const transferMember = async (
+    fromTeamId: string,
+    toTeamId: string,
+    userId: string
+  ) => {
+    // backend: remove + add
+    await removeMember(fromTeamId, userId);
+    const updatedTargetTeam = await addMember(toTeamId, userId);
+
+    setTeams(prev => {
+      const cleaned = removeUserFromAllTeams(prev, userId);
+
+      return cleaned.map(team =>
+        team.id === toTeamId ? updatedTargetTeam : team
+      );
+    });
+  };
+
+  const handleAddMemberToTeam = async (teamId: string, userId: string) => {
+    const updatedTeam = await addMember(teamId, userId);
+
+    setTeams(prev => {
+      const cleaned = removeUserFromAllTeams(prev, userId);
+
+      return cleaned.map(team =>
+        team.id === teamId ? updatedTeam : team
+      );
+    });
+
+    return updatedTeam;
+  };
+
+  const handleRemoveMemberFromTeam = async (
+    teamId: string,
+    userId: string
+  ) => {
+    await removeMember(teamId, userId);
+
+    setTeams(prev =>
+      prev.map(team =>
+        team.id === teamId
+          ? {
+              ...team,
+              members: team.members?.filter(m => m.id !== userId)
+            }
+          : team
+      )
+    );
+  };
+  return {
+    teams,
+    loading,
+    fetchTeams,
+    fetchTeamById,
+    createTeam: handleCreateTeam,
+    updateTeam: handleUpdateTeam,
+    deleteTeam: handleDeleteTeam,
+    addMemberToTeam: handleAddMemberToTeam,
+    removeMemberFromTeam: handleRemoveMemberFromTeam,
+    transferMember
+  };
+};
 
 export default useTeams;
