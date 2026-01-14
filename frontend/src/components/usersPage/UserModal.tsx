@@ -31,7 +31,6 @@ const  UserModal = ({ open, onOpenChange, user, onSave, isSaving }: UserDialogPr
     name: "",
     email: "",
     team_id: "",
-    is_active: true,
   });
 
   useEffect(() => {
@@ -42,7 +41,6 @@ const  UserModal = ({ open, onOpenChange, user, onSave, isSaving }: UserDialogPr
         name: "",
         email: "",
         team_id: "",
-        is_active: true,
       });
     }
   }, [user, open]);
@@ -114,24 +112,7 @@ const  UserModal = ({ open, onOpenChange, user, onSave, isSaving }: UserDialogPr
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={formData.is_active ? "active" : "inactive"}
-                disabled={isSaving}
-                onValueChange={(value: "active" | "inactive") =>
-                  setFormData({ ...formData, is_active: value === "active" })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Ativo</SelectItem>
-                  <SelectItem value="inactive">Inativo</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            
           </div>
 
           <DialogFooter>

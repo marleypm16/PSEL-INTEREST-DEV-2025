@@ -29,19 +29,10 @@ const UsersCards = ({ user, handleOpenModal, handleDelete }: UsersCardsProps) =>
 
             <div className="flex flex-wrap gap-2 pt-2">
               <Badge variant="outline" className="text-xs">
-                {user.team || "Sem equipe"}
+                {user.team?.name || "Sem equipe"}
               </Badge>
               
-              <Badge
-                variant={user.is_active ? "default" : "secondary"}
-                className={
-                   user.is_active 
-                     ? "bg-emerald-600/15 text-emerald-700 hover:bg-emerald-600/25 dark:bg-emerald-500/20 dark:text-emerald-400 border-0" 
-                     : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                }
-              >
-                {user.is_active ? "Ativo" : "Inativo"}
-              </Badge>
+              
             </div>
           </div>
 

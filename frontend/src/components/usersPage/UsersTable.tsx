@@ -26,7 +26,6 @@ const UsersTable = ({ users, handleOpenModal, handleDelete }: UsersTableProps) =
             <TableHead>Usuário</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Equipe</TableHead>
-            <TableHead>Status</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
@@ -46,18 +45,11 @@ const UsersTable = ({ users, handleOpenModal, handleDelete }: UsersTableProps) =
               
               <TableCell>
                 <Badge variant="outline" className="font-normal">
-                  {user.team ? user.team : "Sem equipe"}
+                  {user.team?.name || "Sem equipe"}
                 </Badge>
               </TableCell>
               
-              <TableCell>
-                <Badge 
-                  variant={user.is_active ? "default" : "secondary"}
-                  className={user.is_active ? "bg-emerald-600 hover:bg-emerald-700" : ""}
-                >
-                  {user.is_active ? "Ativo" : "Inativo"}
-                </Badge>
-              </TableCell>
+              
               
               <TableCell className="text-right">
                 <div className="flex items-center justify-end gap-2">
