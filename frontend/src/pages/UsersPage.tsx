@@ -92,7 +92,7 @@ const UserPage = () => {
             toast.error("Verifique os campos em vermelho.");
             return;
         }
-                if (data.detail && typeof data.detail === 'string' && data.detail.includes("Integrity Error: Duplicate key or constraint violation.")) {
+                if (data.detail && typeof data.detail === 'string') {
              toast.error("Já existe um usuário com este email.");
              return;
         }
