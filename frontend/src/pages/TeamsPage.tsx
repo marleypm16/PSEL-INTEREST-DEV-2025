@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2, Plus, Search } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -9,12 +9,12 @@ import  DeleteDialog  from "../components/DeleteDialog";
 import { CreateTeamDTO, Team } from "../types/teams";
 import { toast } from "sonner";
 import useTeams from "../hooks/useTeams";
-import TeamCard from "../components/TeamCard";
+import TeamCard from "../components/teamsPage/TeamCard";
 import useUsers from "../hooks/useUsers";
 
 
 const TeamsPage = () => {
-  const { teams, fetchTeams, createTeam, updateTeam, deleteTeam } = useTeams();
+  const { teams,loading, fetchTeams, createTeam, updateTeam, deleteTeam } = useTeams();
   const {users,fetchUsers} = useUsers();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -57,8 +57,8 @@ const TeamsPage = () => {
     try{
       setIsSubmitting(true);
       if (editingTeam) {
-      await updateTeam(editingTeam.id, team);     
-      await fetchUsers();
+      await updateTeam(editingTeam.id, team);    
+      await fetchUsers(); 
       toast.success("Equipe atualizada com sucesso!"); 
     } else {
       await createTeam(team);
@@ -102,12 +102,21 @@ const TeamsPage = () => {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredTeams.map((team) => (
+        {loading ? (
+          <div className="flex justify-center items-center col-span-full">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <>
+            {filteredTeams.map((team) => (
           <TeamCard key={team.id} team={team}  handleOpenModal={handleOpenModal} handleDeleteTeam={handleDeleteTeam} />
         ))}
+          </>
+        )}
+        
       </div>
 
-      {filteredTeams.length === 0 && (
+      {!loading && filteredTeams.length === 0 && (
         <Card>
           <CardContent className="text-center py-12 text-slate-500">
             Nenhuma equipe encontrada.
