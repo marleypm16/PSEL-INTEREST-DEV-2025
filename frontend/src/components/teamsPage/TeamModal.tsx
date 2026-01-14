@@ -27,6 +27,7 @@ interface TeamModalProps {
   onSave: (team: CreateTeamDTO) => void;
   isSaving?: boolean;
   availableUsers: User[]; // Lista de usuários para selecionar o líder
+  existingTeams: Team[]; // Lista de equipes existentes para validação do líder
 }
 
 const TeamModal = ({ 
@@ -35,8 +36,24 @@ const TeamModal = ({
   team, 
   onSave, 
   isSaving,
-  availableUsers 
+  availableUsers,
+  existingTeams 
 }: TeamModalProps) => {
+    
+  const isUserLeaderOfOtherTeam = (userId: string) => {
+    return existingTeams.some(
+      (t) => t.leader_id === userId && t.id !== team?.id
+    );
+  };
+
+  // Obter o nome da equipe da qual o usuário é líder
+  const getTeamWhereUserIsLeader = (userId: string) => {
+    const leaderTeam = existingTeams.find(
+      (t) => t.leader_id === userId && t.id !== team?.id
+    );
+    return leaderTeam?.name;
+  };
+
   const [formData, setFormData] = useState<CreateTeamDTO>({
     name: "",
     leader_id: "",
@@ -100,18 +117,28 @@ const TeamModal = ({
                   <SelectValue placeholder="Selecione um líder" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableUsers.length > 0 ? (
-                    availableUsers.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name}
-                        {team?.leader_id === user.id && " (Atual)"}
+                  {availableUsers.map((user) => {
+                    const isLeaderElsewhere = isUserLeaderOfOtherTeam(user.id);
+                    const leaderTeamName = getTeamWhereUserIsLeader(user.id);
+                    return (
+                      <SelectItem
+                        key={user.id}
+                        value={user.id}
+                        disabled={isLeaderElsewhere}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1">
+                            <span>{user.name}</span>
+                            {isLeaderElsewhere && (
+                              <span className="text-xs text-orange-600 ml-2">
+                                (Líder de "{leaderTeamName}")
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </SelectItem>
-                    ))
-                  ) : (
-                    <div className="p-2 text-sm text-muted-foreground text-center">
-                      Nenhum usuário disponível para liderança
-                    </div>
-                  )}
+                    );
+                  })}
                 </SelectContent>
               </Select>
               {availableUsers.length === 0 && (
