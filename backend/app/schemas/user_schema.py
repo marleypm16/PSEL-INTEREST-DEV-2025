@@ -1,19 +1,17 @@
-from pydantic import BaseModel,Field
+# app/schemas/user_schema.py
+from pydantic import BaseModel, Field
 from typing import Optional
-import uuid
-class UserBase(BaseModel):
-    name:str = Field(..., min_length=2,description="Nome do usuário")
-    email: str = Field(..., description="Email do usuário")
-    is_active: bool = Field(default=True, description="Indica se o usuário está ativo")
+from app.schemas.commom import UserBase, UserReadSimple, TeamReadSimple # Importa do Common
 
+# Schemas de Escrita (Create/Update) ficam aqui
 class UserCreate(UserBase):
     pass
-
 class UserUpdate(UserBase):
-    name: Optional[str] = Field(None, min_length=2,description="Nome do usuário")
-    email: Optional[str] = Field(None, description="Email do usuário")
-    is_active: Optional[bool] = Field(None, description="Indica se o usuário está ativo")
+    pass
 
-class UserRead(UserBase):
-    id: uuid.UUID
-    team_id: Optional[uuid.UUID] = None
+# Schema de Leitura Rico (Com relacionamentos)
+class UserReadWithTeam(UserReadSimple):
+    # Usamos o TeamReadSimple que veio do common.py
+    # Sem aspas, sem conflito!
+    team: Optional[TeamReadSimple] = None
+    leader_of: Optional[TeamReadSimple] = None
