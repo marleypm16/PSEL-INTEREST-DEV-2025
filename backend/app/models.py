@@ -13,7 +13,6 @@ class User(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     name: str
     email: str = Field(index=True, unique=True)
-    is_active: bool = Field(default=True)
 
     team_id: Optional[uuid.UUID] = Field(
     default=None,
