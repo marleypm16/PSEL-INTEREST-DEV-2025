@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import UserModal from "../components/usersPage/UserModal";
 import UsersTable from "../components/usersPage/UsersTable";
 import UsersCards from "../components/usersPage/UsersCards";
-import { useUsers } from "../hooks/useUsers";
+import  useUsers  from "../hooks/useUsers";
 import DeleteDialog from "../components/DeleteDialog";
 
 const UserPage = () => {
