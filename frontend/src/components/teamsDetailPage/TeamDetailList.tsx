@@ -1,5 +1,6 @@
-import { Mail, Trash2, UserIcon, Users } from "lucide-react";
+import { Mail, Trash2, UserIcon, Users, ArrowRight } from "lucide-react";
 import { Team } from "../../types/teams";
+import { User } from "../../types/users";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -7,8 +8,9 @@ import { Button } from "../ui/button";
 interface TeamDetailListProps {
   team: Team;
   handleRemoveMemberDialog: (memberId: string) => void;
+  handleTransferMemberDialog?: (member: User) => void;
 }
-const TeamDetailList = ({ team, handleRemoveMemberDialog }: TeamDetailListProps) => {
+const TeamDetailList = ({ team, handleRemoveMemberDialog, handleTransferMemberDialog }: TeamDetailListProps) => {
   return (
     <Card>
         <CardHeader>
@@ -35,19 +37,30 @@ const TeamDetailList = ({ team, handleRemoveMemberDialog }: TeamDetailListProps)
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={member.is_active ? "secondary" : "outline"}>
-                      {member.is_active ? "Ativo" : "Inativo"}
-                    </Badge>
+                    
                     {member.id !== team.leader_id ? (
-                      <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveMemberDialog(member.id)}
-                      className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                      title="Remover membro"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                      <>
+                        {handleTransferMemberDialog && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleTransferMemberDialog(member)}
+                            className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            title="Transferir para outra equipe"
+                          >
+                            <ArrowRight className="w-4 h-4" />
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveMemberDialog(member.id)}
+                          className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          title="Remover membro"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </>
                     ) : (
                       <Badge variant="outline" className="text-sm">
                         Líder
