@@ -1,14 +1,15 @@
 import { useEffect, useState, useMemo } from "react";
-import { Plus, Search, Loader2 } from "lucide-react"; // Importar Loader
+import { Plus, Search, Loader2 } from "lucide-react"; 
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { CreateUserDTO, User } from "../types/users";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import axios from "axios"; 
 import UserModal from "../components/usersPage/UserModal";
 import UsersTable from "../components/usersPage/UsersTable";
 import UsersCards from "../components/usersPage/UsersCards";
-import  useUsers  from "../hooks/useUsers";
+import useUsers from "../hooks/useUsers";
 import DeleteDialog from "../components/DeleteDialog";
 
 const UserPage = () => {
@@ -16,9 +17,9 @@ const UserPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | undefined>(undefined);
-  
   const [isSubmitting, setIsSubmitting] = useState(false); 
-  
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({}); 
+
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
@@ -32,9 +33,10 @@ const UserPage = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, []); // Dependência vazia correta para mount
+  }, []); 
 
   const handleOpenModal = (user?: User) => {
+    setValidationErrors({}); 
     setEditingUser(user);
     setIsDialogOpen(true);
   };
@@ -44,24 +46,24 @@ const UserPage = () => {
     setDeletingUserId(userId);
   };
 
-  // 2. CORREÇÃO ASYNC: Aguardar a promessa antes do feedback
   const handleDeleteUser = async () => {
     if (!deletingUserId) return;
     
     try {
       setIsSubmitting(true);
-      await deleteUser(deletingUserId); // Assumindo que o hook retorna uma Promise
+      await deleteUser(deletingUserId);
       toast.success("Usuário excluído com sucesso!");
       setIsDeleteDialogOpen(false);
     } catch (error) {
       toast.error("Erro ao excluir usuário.");
-      // Não fecha o modal em caso de erro, permite tentar de novo
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleSaveUser = async (user: CreateUserDTO) => {
+    setValidationErrors({}); 
+    
     try {
       setIsSubmitting(true);
       if (editingUser) {
@@ -73,7 +75,28 @@ const UserPage = () => {
       }
       setIsDialogOpen(false);
     } catch (error) {
-      console.error(error) // Log para debug
+
+      if (axios.isAxiosError(error) && error.response) {
+        const { status, data } = error.response;
+
+        if (status === 422 && Array.isArray(data.detail)) {
+            const newErrors: Record<string, string> = {};
+            
+            data.detail.forEach((err: any) => {
+                const fieldName = err.loc[err.loc.length - 1];
+                const msg = err.msg.replace('Value error, ', '');
+                newErrors[fieldName] = msg;
+            });
+
+            setValidationErrors(newErrors);
+            toast.error("Verifique os campos em vermelho.");
+            return;
+        }
+                if (data.detail && typeof data.detail === 'string' && data.detail.includes("Integrity Error: Duplicate key or constraint violation.")) {
+             toast.error("Já existe um usuário com este email.");
+             return;
+        }
+      }
       toast.error("Erro ao salvar informações.");
     } finally {
       setIsSubmitting(false);
@@ -83,10 +106,10 @@ const UserPage = () => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
+         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <CardTitle>Gerenciamento de Usuários</CardTitle>
-            <Button onClick={() => handleOpenModal()} className="w-full sm:w-auto">
+            <Button onClick={() => handleOpenModal()} data-cy="add-user-button" className="w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
               Adicionar Usuário
             </Button>
@@ -138,7 +161,6 @@ const UserPage = () => {
           )}
         </CardContent>
       </Card>
-      
       <DeleteDialog
         title="Excluir Usuário"
         open={isDeleteDialogOpen}
@@ -147,14 +169,14 @@ const UserPage = () => {
         isDeleting={isSubmitting} 
         description="Tem certeza que deseja excluir este usuário?"
         itemName={users.find(user => user.id === deletingUserId)?.name}
-      />
-      
+      />      
       <UserModal
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         user={editingUser}
         onSave={handleSaveUser}
         isSaving={isSubmitting} 
+        validationErrors={validationErrors} 
       />
     </div>
   );

@@ -3,6 +3,7 @@ import { Loader2, Plus, Search } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import axios from "axios"
 
 import TeamModal  from "../components/teamsPage/TeamModal";
 import  DeleteDialog  from "../components/DeleteDialog";
@@ -14,24 +15,35 @@ import useUsers from "../hooks/useUsers";
 
 
 const TeamsPage = () => {
-  const { teams,loading, fetchTeams, createTeam, updateTeam, deleteTeam } = useTeams();
-  const {users,fetchUsers} = useUsers();
+  const { teams, loading, fetchTeams, createTeam, updateTeam, deleteTeam } = useTeams();
+  const { users, fetchUsers } = useUsers();
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | undefined>(undefined);
+  
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState<Team | null>(null);
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
   useEffect(() =>{
     fetchTeams();
+    fetchUsers(); 
   }, [])
+
   const filteredTeams = teams.filter((team) =>
     team.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
   const handleOpenModal = (team?: Team) => {
+    setValidationErrors({}); // <--- Limpa erros ao abrir
     setEditingTeam(team);
     setIsDialogOpen(true);
   }
+
   const handleDeleteTeam = (team: Team) => {
     setTeamToDelete(team);
     setDeleteDialogOpen(true);
@@ -43,7 +55,7 @@ const TeamsPage = () => {
     try {
       setIsSubmitting(true);
       await deleteTeam(teamToDelete.id); 
-      await fetchUsers();
+      await fetchUsers(); 
       toast.success("Equipe excluída com sucesso!");
       setDeleteDialogOpen(false);
     } catch (error) {
@@ -53,30 +65,56 @@ const TeamsPage = () => {
     }
   };
 
+ 
   const handleSaveTeam = async (team: CreateTeamDTO) => {
-    try{
+    setValidationErrors({}); 
+
+    try {
       setIsSubmitting(true);
       if (editingTeam) {
-      await updateTeam(editingTeam.id, team);    
-      await fetchUsers(); 
-      toast.success("Equipe atualizada com sucesso!"); 
-    } else {
-      await createTeam(team);
-      await fetchUsers();
-      toast.success("Equipe criada com sucesso!");
-    }
+        await updateTeam(editingTeam.id, team);    
+        await fetchUsers(); 
+        toast.success("Equipe atualizada com sucesso!"); 
+      } else {
+        await createTeam(team);
+        await fetchUsers();
+        toast.success("Equipe criada com sucesso!");
+      }
       setIsDialogOpen(false);
 
     } catch (error) {
+      // Verifica se é erro do Axios
+      if (axios.isAxiosError(error) && error.response) {
+        const { status, data } = error.response;
+
+        // ERRO DE VALIDAÇÃO (422) - Campos inválidos
+        if (status === 422 && Array.isArray(data.detail)) {
+            const newErrors: Record<string, string> = {};
+            
+            data.detail.forEach((err: any) => {
+                const fieldName = err.loc[err.loc.length - 1];
+                let msg = err.msg.replace('Value error, ', '');
+                newErrors[fieldName] = msg;
+            });
+
+            setValidationErrors(newErrors);
+            toast.error("Verifique os campos em vermelho.");
+            return; // Não fecha o modal
+        }
+        
+        // ERRO DE REGRA DE NEGÓCIO (Ex: Nome de time duplicado)
+        if (data.detail && typeof data.detail === 'string') {
+             toast.error(data.detail);
+             return;
+        }
+      }
+
       toast.error("Erro ao salvar equipe.");
 
-    } finally{
+    } finally {
       setIsSubmitting(false);
     }
-    
   };
-
- 
 
   return (
     <div className="space-y-6">
@@ -109,11 +147,10 @@ const TeamsPage = () => {
         ) : (
           <>
             {filteredTeams.map((team) => (
-          <TeamCard key={team.id} team={team}  handleOpenModal={handleOpenModal} handleDeleteTeam={handleDeleteTeam} />
-        ))}
+              <TeamCard key={team.id} team={team}  handleOpenModal={handleOpenModal} handleDeleteTeam={handleDeleteTeam} />
+            ))}
           </>
         )}
-        
       </div>
 
       {!loading && filteredTeams.length === 0 && (
@@ -132,6 +169,7 @@ const TeamsPage = () => {
         isSaving={isSubmitting}
         availableUsers={users}
         existingTeams={teams}
+        errors={validationErrors} 
       />
 
       <DeleteDialog
