@@ -48,7 +48,6 @@ const TeamDetailTransferMember = ({
       setSelectedTeamId("");
       onOpenChange(false);
     } catch (error) {
-      console.error("Erro ao transferir membro:", error);
     } finally {
       setIsTransferring(false);
     }

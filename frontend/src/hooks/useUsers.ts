@@ -17,7 +17,6 @@ const useUsers = () => {
       setLoading(true);
       const data = await getUsers();
       setUsers(data);
-      console.log("Fetched users:", data);
     } catch {
       setError("Erro ao buscar usuários");
     } finally {

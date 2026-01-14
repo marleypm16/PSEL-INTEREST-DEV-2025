@@ -116,7 +116,6 @@ const TeamsDetails = () => {
       toast.success("Equipe atualizada com sucesso!");
       setIsEditModalOpen(false); 
     } catch (error) {
-      console.error(error);
 
       if (axios.isAxiosError(error) && error.response) {
         const { status, data } = error.response;

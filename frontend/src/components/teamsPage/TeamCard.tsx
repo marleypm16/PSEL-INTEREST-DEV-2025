@@ -10,7 +10,6 @@ interface TeamCardProps {
     handleDeleteTeam: (team: Team) => void
 }
 const TeamCard = ({team, handleOpenModal, handleDeleteTeam}: TeamCardProps) => {
-  console.log("Rendering TeamCard for team:", team);
   return (
    <Card key={team.id} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">

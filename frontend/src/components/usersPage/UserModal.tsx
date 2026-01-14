@@ -42,7 +42,6 @@ const  UserModal = ({ open, onOpenChange, user, onSave, isSaving, validationErro
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form Data to Save:", formData);
     onSave(formData);
   };
 
