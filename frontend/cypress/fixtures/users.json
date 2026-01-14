@@ -1,0 +1,12 @@
+{
+  "validUser": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "JohnDoe@gmail.com"
+  },
+  "invalidUser":{
+    "id": 2,
+    "name": "J",
+    "email": "email-invalido"
+  }
+}
