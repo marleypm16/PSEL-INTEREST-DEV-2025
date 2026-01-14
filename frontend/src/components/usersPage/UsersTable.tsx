@@ -56,6 +56,7 @@ const UsersTable = ({ users, handleOpenModal, handleDelete }: UsersTableProps) =
                   <Button 
                     variant="ghost" 
                     size="icon" 
+                    data-cy="edit-button"
                     onClick={() => handleOpenModal(user)}
                     title="Editar usuário"
                   >
@@ -66,7 +67,7 @@ const UsersTable = ({ users, handleOpenModal, handleDelete }: UsersTableProps) =
                     variant="ghost"
                     size="icon"
                     onClick={() => handleDelete(user.id)}
-                    data-cy="delete-user-button"
+                    data-cy="delete-button"
                     className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
                     title="Excluir usuário"
                   >

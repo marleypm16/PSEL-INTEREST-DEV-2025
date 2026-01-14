@@ -56,6 +56,7 @@ const DeleteDialog = ({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
           <AlertDialogAction
+            data-cy="confirm-delete-button"
             onClick={handleConfirm}
             className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
             disabled={isDeleting}

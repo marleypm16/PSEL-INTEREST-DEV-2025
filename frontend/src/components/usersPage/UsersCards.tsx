@@ -43,6 +43,7 @@ const UsersCards = ({ user, handleOpenModal, handleDelete }: UsersCardsProps) =>
               size="icon"
               className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
               onClick={() => handleOpenModal(user)}
+              data-cy="edit-button"
               title="Editar"
             >
               <Edit className="w-4 h-4" />
@@ -52,7 +53,7 @@ const UsersCards = ({ user, handleOpenModal, handleDelete }: UsersCardsProps) =>
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-              data-cy="delete-user-button"
+              data-cy="delete-button"
               onClick={() => handleDelete(user.id)}
               title="Excluir"
             >
