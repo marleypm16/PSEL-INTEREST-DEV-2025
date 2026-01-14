@@ -20,18 +20,22 @@ class UserRepository:
         return user
 
     def update_user(self, user_id: uuid.UUID, new_data_user: dict[str, any]):
-       user = self.get_user_by_id(user_id)
-       for key, value in new_data_user.items():
-           setattr(user, key, value)
-       if user:
-           self.db_session.add(user)
-           self.db_session.commit()
-           self.db_session.refresh(user)
-           return user
+        user = self.get_user_by_id(user_id)
+        if not user:
+            return None
+        for key, value in new_data_user.items():
+            setattr(user, key, value)
+       
+        self.db_session.add(user)
+        self.db_session.commit()
+        self.db_session.refresh(user)
+        return user
     
     def delete_user(self, user_id):
         user = self.get_user_by_id(user_id)
         if user:
+            if user.leader_of:
+                raise Exception("Cannot delete a user who is a team leader.")
             self.db_session.delete(user)
             self.db_session.commit()
         return user
