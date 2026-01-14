@@ -24,9 +24,10 @@ interface UserDialogProps {
   user?: User;
   onSave: (user: CreateUserDTO) => void;
   isSaving?: boolean;
+  validationErrors?: Record<string, string>;
 }
 
-const  UserModal = ({ open, onOpenChange, user, onSave, isSaving }: UserDialogProps) => {
+const  UserModal = ({ open, onOpenChange, user, onSave, isSaving, validationErrors }: UserDialogProps) => {
   const [formData, setFormData] = useState<CreateUserDTO>({
     name: "",
     email: "",
@@ -66,11 +67,15 @@ const  UserModal = ({ open, onOpenChange, user, onSave, isSaving }: UserDialogPr
               <Input
                 id="name"
                 value={formData.name}
+                data-cy="name"
                 disabled={isSaving}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Ex: João Silva"
                 required
               />
+              {validationErrors?.name && (
+                <span className="text-red-500 text-sm">{validationErrors.name}</span>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -78,39 +83,20 @@ const  UserModal = ({ open, onOpenChange, user, onSave, isSaving }: UserDialogPr
               <Input
                 id="email"
                 type="email"
+                data-cy="email"
                 disabled={isSaving}
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="joao.silva@company.com"
                 required
               />
+              {validationErrors?.email && (
+                <span className="text-red-500 text-sm">{validationErrors.email}</span>
+              )}
             </div>
 
 
-            <div className="grid grid-cols-2 gap-4">
-
-              <div className="space-y-2">
-                <Label htmlFor="team">Equipe</Label>
-                <Select
-                  disabled={isSaving}
-                  value={formData.team_id}
-                  onValueChange={(value) => setFormData({ ...formData, team_id: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Desenvolvimento">Desenvolvimento</SelectItem>
-                    <SelectItem value="Marketing">Marketing</SelectItem>
-                    <SelectItem value="Vendas">Vendas</SelectItem>
-                    <SelectItem value="Suporte">Suporte</SelectItem>
-                    <SelectItem value="RH">RH</SelectItem>
-                    <SelectItem value="Design">Design</SelectItem>
-                    <SelectItem value="TI">TI</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            
 
             
           </div>
@@ -124,9 +110,10 @@ const  UserModal = ({ open, onOpenChange, user, onSave, isSaving }: UserDialogPr
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSaving}>
+            <Button type="submit" disabled={isSaving} data-cy="save">
               {user ? "Salvar Alterações" : "Adicionar Usuário"}
               {isSaving && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+              
             </Button>
           </DialogFooter>
         </form>
