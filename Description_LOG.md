@@ -6,6 +6,17 @@ O desenvolvimento do módulo de Gestão de Equipes foi conduzido de forma increm
 
 ---
 
+## Arquivos de configuração
+
+Antes de iniciar o desenvolvimento do módulo, revisei os arquivos de configuração do projeto e preparei o ambiente local.
+
+Inicialmente ajustei o arquivo `.env.example`, definindo as portas dos serviços e as credenciais necessárias para execução dos containers. Em seguida, subi a infraestrutura via Docker para validar que o projeto base estava funcionando corretamente.
+
+Durante essa etapa identifiquei um problema relacionado à variável `SENTRY_DSN`, que não estava definida nos arquivos de configuração da API, causando erro na inicialização da aplicação.
+
+Para resolver, tornei essa configuração **opcional** nos settings da aplicação, preservando a integração com o Sentry para ambientes onde a variável esteja configurada, sem comprometer a execução local do projeto.
+
+Essa alteração permitiu manter a lógica original de monitoramento de erros sem impactar o setup de desenvolvimento.
 ## Modelagem do banco de dados
 
 Iniciei o desenvolvimento pela modelagem relacional, definindo as tabelas `users` e `teams`.
