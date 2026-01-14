@@ -24,17 +24,18 @@ const  UserModal = ({ open, onOpenChange, user, onSave, isSaving, validationErro
   const [formData, setFormData] = useState<CreateUserDTO>({
     name: "",
     email: "",
-    team_id: "",
   });
 
   useEffect(() => {
     if (user) {
-      setFormData(user);
+      setFormData({
+        name: user.name,
+        email: user.email,
+      });
     } else {
       setFormData({
         name: "",
         email: "",
-        team_id: "",
       });
     }
   }, [user, open]);
@@ -86,14 +87,8 @@ const  UserModal = ({ open, onOpenChange, user, onSave, isSaving, validationErro
               {validationErrors?.email && (
                 <span className="text-red-500 text-sm">{validationErrors.email}</span>
               )}
-            </div>
-
-
-            
-
-            
+            </div>  
           </div>
-
           <DialogFooter>
             <Button
               type="button"
