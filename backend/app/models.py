@@ -17,7 +17,6 @@ class User(SQLModel, table=True):
     team_id: Optional[uuid.UUID] = Field(
         default=None,
         foreign_key="teams.id",
-        unique=True
     )
 
     team: Optional["Team"] = Relationship(
