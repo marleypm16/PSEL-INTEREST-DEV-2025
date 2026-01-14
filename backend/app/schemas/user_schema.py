@@ -16,6 +16,4 @@ class UserUpdate(UserBase):
 
 class UserRead(UserBase):
     id: uuid.UUID
-    email: str
-    is_active: bool
     team_id: Optional[uuid.UUID] = None
