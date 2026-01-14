@@ -2,7 +2,6 @@ import uuid
 from app.models import User
 from fastapi import Depends
 from sqlalchemy.orm import selectinload
-from sqlalchemy.exc import IntegrityError 
 
 
 from sqlmodel import Session,select
