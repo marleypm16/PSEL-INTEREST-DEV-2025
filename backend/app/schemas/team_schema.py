@@ -17,3 +17,4 @@ class TeamRead(TeamBase):
     id: uuid.UUID
     leader_id: uuid.UUID
     members: list[UserRead] = []  
+    leader: UserRead
