@@ -55,7 +55,22 @@ const UserPage = () => {
       toast.success("Usuário excluído com sucesso!");
       setIsDeleteDialogOpen(false);
     } catch (error) {
-      toast.error("Erro ao excluir usuário.");
+      if (axios.isAxiosError(error) && error.response) {
+        const { data } = error.response;
+          
+            if (data.detail && typeof data.detail === 'string') {
+              toast.error(data.detail);
+            } else {
+              toast.error("Erro ao excluir usuário.");
+            }
+        }
+       else if (axios.isAxiosError(error) && error.request) {
+        // Erro de rede ou servidor não respondeu
+        toast.error("Erro de conexão. Verifique sua internet.");
+      } else {
+        // Erro genérico
+        toast.error("Erro inesperado ao excluir usuário.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -92,8 +107,8 @@ const UserPage = () => {
             toast.error("Verifique os campos em vermelho.");
             return;
         }
-                if (data.detail && typeof data.detail === 'string') {
-             toast.error("Já existe um usuário com este email.");
+            if (data.detail && typeof data.detail === 'string') {
+             toast.error(data.detail);
              return;
         }
       }
