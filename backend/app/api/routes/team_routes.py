@@ -4,6 +4,8 @@ from fastapi import APIRouter,Depends,HTTPException
 from app.schemas.team_schema import TeamRead,TeamCreate,TeamUpdate
 import uuid
 from app.repositories.team_repository import TeamRepository
+from sqlalchemy.exc import IntegrityError 
+
 router = APIRouter(prefix="/teams", tags=["teams"])
 
 @router.get("/",response_model=list[TeamRead],status_code=200)
@@ -19,8 +21,13 @@ def get_team(team_id: uuid.UUID, team_repository: TeamRepository = Depends(TeamR
 
 @router.post("/",response_model=TeamRead,status_code=201)
 def create_team(team_data_create: TeamCreate, team_repository: TeamRepository = Depends(TeamRepository.get_team_repository)):
-    new_team = Team(**team_data_create.model_dump())
-    return team_repository.create_team(new_team)
+    try:
+        new_team = Team(**team_data_create.model_dump())
+        return team_repository.create_team(new_team)
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="This user is already leading another team.")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.put("/{team_id}",response_model=TeamRead)
 def update_team(team_id: uuid.UUID, team_data_update: TeamUpdate, team_repository: TeamRepository = Depends(TeamRepository.get_team_repository)):
@@ -38,16 +45,20 @@ def delete_team(team_id: uuid.UUID, team_repository: TeamRepository = Depends(Te
     team_repository.delete_team(team_id)
     return None
 
-@router.post("/{team_id}/member/{user_id}",status_code=201,response_model=UserRead)
+@router.post("/{team_id}/member/{user_id}",status_code=201,response_model=TeamRead)
 def add_member_to_team(team_id: uuid.UUID, user_id: uuid.UUID, team_repository: TeamRepository = Depends(TeamRepository.get_team_repository)):
-    user = team_repository.add_member_to_team(team_id, user_id)
-    if not user:
+    team = team_repository.add_member_to_team(team_id, user_id)
+    if not team:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
+    return team
 
 @router.delete("/{team_id}/member/{user_id}" ,status_code=204)
 def remove_member_from_team(team_id: uuid.UUID, user_id: uuid.UUID, team_repository: TeamRepository = Depends(TeamRepository.get_team_repository)):
-    user = team_repository.remove_member_from_team(team_id, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found or not in the team")
-    return None
+    try:
+        updated_team = team_repository.remove_member_from_team(team_id, user_id)
+        if not updated_team:
+             raise HTTPException(status_code=404, detail="Team or User not found")
+        return updated_team
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
